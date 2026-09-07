@@ -1168,6 +1168,13 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
     select(e.altKey&&sel?(sel.parentElement.closest('.ed')||el):el);
   });
   deck.addEventListener('input',()=>save());
+  /* 打った文字も「元に戻す」で戻せるように、要素を編集し始めた時点の中身を控える */
+  let typing=null;
+  deck.addEventListener('beforeinput',e=>{
+    const el=e.target&&e.target.closest?e.target.closest('.leaf'):null; if(!el) return;
+    if(!typing||typing.el!==el){ typing={el}; undo.push({el,prop:'innerHTML',old:el.innerHTML}); if(undo.length>200) undo.shift(); }
+  });
+  deck.addEventListener('focusout',()=>{ typing=null; });
   /* Enter で段落が割れると書式が外れるので、改行だけを入れる */
   deck.addEventListener('keydown',e=>{
     if(mode!=='text'||e.key!=='Enter'||e.isComposing) return;
@@ -1223,7 +1230,8 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
     }
   });
   function doUndo(){const u=undo.pop();if(!u)return;
-    if(u.prop==='cssText')u.el.style.cssText=u.old;else u.el.style[u.prop]=u.old;
+    if(u.prop==='innerHTML'){ u.el.innerHTML=u.old; typing=null; }
+    else if(u.prop==='cssText')u.el.style.cssText=u.old;else u.el.style[u.prop]=u.old;
     save();if(sel)sync();}
 
   /* ================= 画像の取り込み =================
@@ -1343,6 +1351,7 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
     if(e.dataTransfer.files.length) putImages(e.dataTransfer.files);
   });
 
+  document.getElementById('bar').addEventListener('mousedown',e=>{ if(e.target.closest('button')) e.preventDefault(); });
   btnText.onclick=()=>setMode('text');
   btnMove.onclick=()=>setMode('move');
   btnView.onclick=()=>setMode('view');
@@ -1396,8 +1405,8 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
     if(dir<0){ i = ZSTEPS.filter(v=>v<cur-0.001).length-1; }
     i = Math.max(0,Math.min(ZSTEPS.length-1,i));
     zoomMode = ZSTEPS[i]; fit();
-    const vp=document.getElementById('vp');
-    if(dir>0) vp.scrollLeft=(vp.scrollWidth-vp.clientWidth)/2;
+    /* 拡大しても左端（見出しの始まり）が見えたままにする */
+    document.getElementById('vp').scrollLeft=0;
   }
   document.getElementById('btnZi').onclick=()=>stepZoom(1);
   document.getElementById('btnZo').onclick=()=>stepZoom(-1);
