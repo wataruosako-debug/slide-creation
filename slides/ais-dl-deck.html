@@ -108,6 +108,8 @@ body{
                display:flex;align-items:center;justify-content:center;
                font-size:20px;font-weight:700;color:#9FB2CC;letter-spacing:.08em}
 .imgbox img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;display:block}
+.imgbox.filled{background:none;border:none}
+.imgbox.filled::after{content:none}
 .r169{aspect-ratio:16/9} .r43{aspect-ratio:4/3} .r11{aspect-ratio:1/1}
 
 /* グラフ */
@@ -884,8 +886,13 @@ body{
   const deck=document.getElementById('deck'),panel=document.getElementById('panel'),tip=document.getElementById('tip');
   const KEY='ais-dl-deck-v1';let editing=false,sel=null,undo=[];
 
-  /* 置いていない画像は枠だけ見せる */
-  deck.querySelectorAll('.imgbox img').forEach(i=>{ i.onerror=()=>i.remove(); });
+  /* 画像は png → jpg → jpeg → webp の順に探す。全部なければ枠だけ残す */
+  deck.querySelectorAll('.imgbox img').forEach(img=>{
+    const id=img.closest('.imgbox').dataset.id, ext=['png','jpg','jpeg','webp'];
+    let n=0;
+    img.onerror=()=>{ n++; if(n<ext.length) img.src=`images/${id}.${ext[n]}`; else img.remove(); };
+    img.onload=()=>img.closest('.imgbox').classList.add('filled');
+  });
 
   /* --- ツールチップ（グラフのホバー） --- */
   deck.addEventListener('mouseover',e=>{
