@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>html2pptx 動作確認用サンプル</title>
+<style>
+  /* ---- トークン（本番デッキではテーマに合わせて差し替える） ---- */
+  :root {
+    --ink:      #16202b;   /* 本文・見出し */
+    --ink-mute: #5b6b7a;   /* 補足テキスト */
+    --paper:    #ffffff;   /* スライド地 */
+    --rule:     #d9e0e6;   /* 罫線 */
+    --accent:   #0f6ab4;   /* 主張色（1スライド1箇所まで） */
+
+    /* 共通マスター：余白と各ゾーンの位置を全スライドで固定する */
+    --margin-x: 96px;
+    --margin-y: 72px;
+  }
+
+  /* html2pptx は .slide 要素をスライドの境界として扱う。
+     各 .slide には必ず明示的な幅・高さを指定する（16:9 = 1600x900）。 */
+  .slide {
+    width: 1600px;
+    height: 900px;
+    position: relative;
+    box-sizing: border-box;
+    padding: var(--margin-y) var(--margin-x);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Yu Gothic", "Hiragino Sans", "Noto Sans JP", Meiryo, sans-serif;
+    overflow: hidden;
+  }
+
+  .eyebrow {
+    font-size: 22px;
+    letter-spacing: .18em;
+    color: var(--ink-mute);
+    margin: 0 0 20px;
+  }
+  .title {
+    font-size: 76px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: .01em;
+    margin: 0;
+  }
+  .lede {
+    font-size: 28px;
+    line-height: 1.7;
+    color: var(--ink-mute);
+    margin: 32px 0 0;
+    max-width: 1000px;
+  }
+
+  /* 中身スライドの見出しゾーン（全スライドで同じ高さに揃える） */
+  .head {
+    border-bottom: 2px solid var(--rule);
+    padding-bottom: 24px;
+    margin-bottom: 48px;
+  }
+  .head h2 {
+    font-size: 46px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0;
+  }
+
+  .cols {
+    display: flex;
+    gap: 40px;
+  }
+  .card {
+    flex: 1;
+    border: 2px solid var(--rule);
+    border-radius: 14px;
+    padding: 36px 32px;
+  }
+  .card .k {
+    font-size: 20px;
+    letter-spacing: .12em;
+    color: var(--ink-mute);
+    margin: 0 0 16px;
+  }
+  .card .v {
+    font-size: 56px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .card .v.on { color: var(--accent); }
+  .card p.note {
+    font-size: 22px;
+    line-height: 1.7;
+    color: var(--ink-mute);
+    margin: 18px 0 0;
+  }
+
+  .foot {
+    position: absolute;
+    left: var(--margin-x);
+    bottom: 40px;
+    font-size: 18px;
+    color: var(--ink-mute);
+  }
+</style>
+</head>
+<body>
+
+<!-- 1枚目：表紙 -->
+<div class="slide">
+  <p class="eyebrow">HTML2PPTX SMOKE TEST</p>
+  <h1 class="title">HTMLから編集可能な<br>PowerPointを書き出す</h1>
+  <p class="lede">この3枚は変換パイプラインの動作確認用サンプル。実案件のデッキは、テーマ決定後にトークン（配色・タイポ・グリッド）ごと作り直す。</p>
+  <div class="foot">slides/sample.html · 1600 × 900</div>
+</div>
+
+<!-- 2枚目：レイアウト確認 -->
+<div class="slide">
+  <div class="head"><h2>共通マスターが効いていれば、2枚目以降も同じ位置に見出しが載る</h2></div>
+  <div class="cols">
+    <div class="card">
+      <p class="k">SLIDE SIZE</p>
+      <p class="v">1600×900</p>
+      <p class="note">.slide に明示的な寸法が必要。16:9 の既定値。</p>
+    </div>
+    <div class="card">
+      <p class="k">LAYOUT</p>
+      <p class="v">flex / grid</p>
+      <p class="note">flexbox・grid・グラデーション・角丸・影・transform に対応。</p>
+    </div>
+    <div class="card">
+      <p class="k">EDITABLE</p>
+      <p class="v on">テキスト</p>
+      <p class="note">画像化ではなく、PowerPoint側で編集できる要素として出力される。</p>
+    </div>
+  </div>
+  <div class="foot">2 / 3</div>
+</div>
+
+<!-- 3枚目：制約の確認 -->
+<div class="slide">
+  <div class="head"><h2>崩れる原因はだいたいこの3つ</h2></div>
+  <div class="cols">
+    <div class="card">
+      <p class="k">FONT</p>
+      <p class="v">環境依存</p>
+      <p class="note">変換サーバーとPowerPoint側の両方に入っているフォントを使う。@font-face と外部フォント読込は公開RESTでは無効。</p>
+    </div>
+    <div class="card">
+      <p class="k">IMAGE</p>
+      <p class="v">絶対URL</p>
+      <p class="note">base64 データURI か絶対URLのみ。相対パスは失敗する。</p>
+    </div>
+    <div class="card">
+      <p class="k">SVG</p>
+      <p class="v">→ PNG</p>
+      <p class="note">インラインSVGは高解像度PNGに変換されて埋め込まれる。</p>
+    </div>
+  </div>
+  <div class="foot">3 / 3</div>
+</div>
+
+</body>
+</html>
