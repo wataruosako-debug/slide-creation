@@ -184,6 +184,34 @@ body.howto-on{padding-top:132px}
                      background:rgba(255,210,74,.14)}
 .ed-sel{outline:2px solid var(--orange) !important;outline-offset:3px}
 
+/* 画像スロットの一覧 */
+#slots{position:fixed;right:18px;top:74px;width:344px;z-index:81;display:none;background:#fff;
+       border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 50px rgba(18,48,97,.2);
+       max-height:calc(100vh - 100px);overflow:auto;
+       font:400 13px/1.6 -apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:var(--ink)}
+#slots.show{display:block}
+#slots .hd2{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;
+            border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;border-radius:12px 12px 0 0}
+#slots .hd2 b{font-size:15px;color:var(--navy)}
+#slots .hd2 button{background:#F2F6FB;border:1px solid var(--line);border-radius:7px;padding:6px 14px;font:inherit;cursor:pointer}
+#slots .sr{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;
+           padding:10px 16px;border-bottom:1px solid var(--line);cursor:pointer}
+#slots .sr:hover{background:var(--sky-2)}
+#slots .mini{width:96px;height:60px;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+             background:#fff;display:flex;align-items:center;justify-content:center}
+#slots .mini svg,#slots .mini img{width:100%;height:100%;object-fit:contain}
+#slots .sr b{display:block;font-size:14px;color:var(--navy)}
+#slots .sr span{color:var(--muted);font-size:12px}
+#slots .sr em{font-style:normal;color:var(--orange);font-weight:700;font-size:12px}
+#slots .tipline{padding:12px 16px;color:var(--muted);font-size:12px}
+
+/* 一覧を開いている間は、スライド上の枠にも印を出す */
+body.slots-on .imgbox{outline:3px dashed var(--orange);outline-offset:6px;overflow:visible}
+body.slots-on .imgbox::before{content:attr(data-id);position:absolute;left:0;top:-30px;z-index:6;
+  background:var(--orange);color:#fff;padding:4px 12px;border-radius:6px;font-size:15px;font-weight:700;white-space:nowrap}
+.imgbox.flash{animation:fl 1.1s ease}
+@keyframes fl{0%,100%{outline-color:var(--orange)}50%{outline:5px solid var(--orange);background:#FFF4E9}}
+
 /* 画像の割り当て画面 */
 #assign{position:fixed;inset:0;z-index:82;display:none;align-items:center;justify-content:center;background:rgba(10,22,44,.6)}
 #assign.show{display:flex}
@@ -226,7 +254,9 @@ body.howto-on{padding-top:132px}
 @media print{
   @page{size:1600px 900px;margin:0}
   body{background:#fff;padding:0;gap:0;display:block}
-  #bar,#panel,#tip,#howto,#drop{display:none !important}
+  #bar,#panel,#tip,#howto,#drop,#slots,#assign{display:none !important}
+  body.slots-on .imgbox{outline:none !important}
+  body.slots-on .imgbox::before{content:none !important}
   .slide{break-after:page;page-break-after:always}
   .ed-sel{outline:none !important}
   .track i{transition:none}
@@ -286,6 +316,13 @@ body.howto-on{padding-top:132px}
 <div id="tip"></div>
 <input type="file" id="fileIn" accept="image/*" multiple hidden>
 <div id="drop"><div><b>ここに画像をドロップ</b><span>ファイル名にIDがあれば自動、なければ次の画面で選べます</span></div></div>
+<div id="slots"><div class="hd2">
+  <b>画像を入れる場所　9か所</b>
+  <button id="slotsClose">閉じる</button>
+</div><div id="slotRows"></div>
+<p class="tipline">行をクリックすると、その場所へ移動してファイルを選べます。<br>スライド上の枠を直接クリックしても差し替えられます。</p>
+</div>
+
 <div id="assign"><div class="win">
   <h3>どこに入れるか選んでください</h3>
   <p class="note">ファイル名から判別できなかった画像です。使わないものは「入れない」を選んでください。</p>
@@ -1139,6 +1176,7 @@ body.howto-on{padding-top:132px}
     let msg=extra||'';
     try{ localStorage.setItem(KEY,deck.innerHTML); }
     catch(e){ msg+='\n\n※ 画像が大きく、ブラウザへの自動保存ができませんでした。「HTMLを書き出す」で保存してください。'; }
+    if(slotsBox.classList.contains('show')) buildSlots();
     if(msg) alert(msg.trim());
   }
   const readAll=files=>Promise.all([...files].map(f=>new Promise(res=>{
@@ -1198,7 +1236,35 @@ body.howto-on{padding-top:132px}
     targetSlot=box.dataset.id; fileIn.click();
   },true);
 
-  btnImg.onclick=()=>{ targetSlot=null; fileIn.click(); };
+  /* 画像スロットの一覧 */
+  const slotsBox=document.getElementById('slots'), slotRows=document.getElementById('slotRows');
+  function buildSlots(){
+    slotRows.innerHTML='';
+    SLOTS.forEach(id=>{
+      const box=deck.querySelector(`.imgbox[data-id="${id}"]`);
+      const filled=box.classList.contains('filled');
+      const r=document.createElement('div'); r.className='sr';
+      const mini=document.createElement('div'); mini.className='mini';
+      mini.innerHTML = filled ? `<img src="${box.querySelector('img').src}">` : (box.querySelector('svg')?.outerHTML||'');
+      const txt=document.createElement('div');
+      txt.innerHTML=`<b>${SLOT_LABEL[id]}</b><span>${id}</span>　<em>${filled?'画像あり':'イラスト'}</em>`;
+      r.append(mini,txt);
+      r.onclick=()=>{
+        box.scrollIntoView({behavior:'smooth',block:'center'});
+        box.classList.add('flash'); setTimeout(()=>box.classList.remove('flash'),1200);
+        targetSlot=id; fileIn.click();
+      };
+      slotRows.appendChild(r);
+    });
+  }
+  function toggleSlots(on){
+    slotsBox.classList.toggle('show',on);
+    document.body.classList.toggle('slots-on',on);
+    btnImg.classList.toggle('on',on);
+    if(on) buildSlots();
+  }
+  btnImg.onclick=()=>toggleSlots(!slotsBox.classList.contains('show'));
+  document.getElementById('slotsClose').onclick=()=>toggleSlots(false);
   fileIn.onchange=()=>{ putImages(fileIn.files, targetSlot); targetSlot=null; fileIn.value=''; };
   addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('show');});
   drop.addEventListener('dragleave',e=>{ if(e.target===drop) drop.classList.remove('show'); });
