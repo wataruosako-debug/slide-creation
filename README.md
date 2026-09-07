@@ -4,8 +4,9 @@
 
 ```
 slides/
-  ai-insight-sales.html   AIインサイトセールス サービス紹介（20枚）
-  sample.html             変換の動作確認用サンプル
+  ai-insight-sales-v1.html  AIインサイトセールス サービス紹介・敬体版（20枚）
+  ai-insight-sales.html     AIインサイトセールス サービス紹介・常体版（20枚）
+  sample.html               変換の動作確認用サンプル
 scripts/
   convert.mjs             HTML -> PPTX（html2pptx.app のAPIを直接叩く）
   shot.mjs                各スライドをPNGに書き出して見た目を確認する
@@ -19,8 +20,8 @@ scripts/
 
 ```bash
 npm install playwright-core
-node scripts/shot.mjs slides/ai-insight-sales.html shots
-node scripts/preview-pdf.mjs slides/ai-insight-sales.html preview.pdf
+node scripts/shot.mjs slides/ai-insight-sales-v1.html shots
+node scripts/preview-pdf.mjs slides/ai-insight-sales-v1.html preview.pdf
 ```
 
 日本語フォントは描画環境のものが使われるため、PowerPoint上の最終的な字幅とは完全には一致しない。レイアウトの確認用と考える。
@@ -61,7 +62,20 @@ node scripts/convert.mjs slides/sample.html -o sample.pptx -s 16:9
 
 ## デザインの取り決め
 
-`ai-insight-sales.html` の `:root` に配色トークンを置き、全スライドで同じマスターを守る。
+各ファイルの `:root` に配色トークンを置き、全スライドで同じマスターを守る。
+
+### 敬体版 `ai-insight-sales-v1.html`
+
+- **キャンバス** 1600 × 900px。余白は上40 / 左右80 / 下26px
+- **上部の章ナビ** 6分割。現在地はオレンジの罫＋ネイビーの文字、他は #8794A6
+- **見出しゾーン** 高さ132px固定。タイトルは40pxで**必ず1行**に収める（全角36文字まで）
+- **本文ゾーン** 483px（「要点」バーのないページは554px）
+- **要点バー** 各章の結論。ネイビーの縦罫＋薄い青の地
+- **黄色マーカー** `linear-gradient(transparent 62%, #FFE87E 62%)` で下端だけを塗り、文字にかぶらせない
+- **文字サイズ** 本文23px（PPTX換算 約14pt）が下限
+- **配色** ネイビー #13315D は構造、オレンジ #C25309 は強調、ゴールド #F2C94C は濃紺地の上でのみ使う
+
+### 常体版 `ai-insight-sales.html`
 
 - **キャンバス** 1600 × 900px。余白は上44 / 右80 / 下34 / 左124px
 - **見出しゾーン** 高さ164px固定。1行タイトルでも2行タイトルでも罫線の位置が動かない
