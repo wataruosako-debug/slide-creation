@@ -3,9 +3,27 @@
 [html2pptx.app](https://html2pptx.app) で、HTML/CSS から編集可能な PowerPoint (.pptx) を書き出すためのリポジトリ。
 
 ```
-slides/         スライドのHTML（1ファイル = 1デッキ）
-scripts/        変換スクリプト
+slides/
+  ai-insight-sales.html   AIインサイトセールス サービス紹介（20枚）
+  sample.html             変換の動作確認用サンプル
+scripts/
+  convert.mjs             HTML -> PPTX（html2pptx.app のAPIを直接叩く）
+  shot.mjs                各スライドをPNGに書き出して見た目を確認する
+  preview-pdf.mjs         確認用PDFを作る
 ```
+
+## 見た目の確認（ローカル、APIキー不要）
+
+`scripts/shot.mjs` と `scripts/preview-pdf.mjs` はヘッドレスChromiumでHTMLを描画する。
+はみ出し（900pxを超える中身）があれば shot.mjs が警告を出す。
+
+```bash
+npm install playwright-core
+node scripts/shot.mjs slides/ai-insight-sales.html shots
+node scripts/preview-pdf.mjs slides/ai-insight-sales.html preview.pdf
+```
+
+日本語フォントは描画環境のものが使われるため、PowerPoint上の最終的な字幅とは完全には一致しない。レイアウトの確認用と考える。
 
 ## 変換の実行（ローカル環境で）
 
@@ -43,4 +61,12 @@ node scripts/convert.mjs slides/sample.html -o sample.pptx -s 16:9
 
 ## デザインの取り決め
 
-`slides/sample.html` の `:root` にトークン（配色・余白）を置き、全スライドで共通のマスター（左右96px / 上下72pxの余白、見出しゾーン、罫線位置）を守る。案件ごとにトークンを差し替えて使う。
+`ai-insight-sales.html` の `:root` に配色トークンを置き、全スライドで同じマスターを守る。
+
+- **キャンバス** 1600 × 900px。余白は上44 / 右80 / 下34 / 左124px
+- **見出しゾーン** 高さ164px固定。1行タイトルでも2行タイトルでも罫線の位置が動かない
+- **本文ゾーン** 585px。フッターまでの縦を使い切り、下に死んだ余白を作らない
+- **文字サイズ** 本文24px（PPTX換算 約14pt）を下限とする。表の中身も同じ
+- **配色** ネイビー #13315D は構造（見出し・罫線）、オレンジ #C25309 は1スライドにつき「見てほしい1箇所」だけ
+- **弱い情報** #54637A より薄いグレー文字は使わない
+- **左端の縦レール** 6章のどこを読んでいるかを示すシグネチャ要素
