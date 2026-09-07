@@ -281,7 +281,7 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
 #sheet .hd3{display:flex;flex-direction:column;gap:2px}
 #sheet .tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 #sheet #pCols{display:inline-flex;gap:6px;align-items:center}
-#sheet textarea{width:100%;min-height:84px;font-size:17px;line-height:1.5;padding:10px;border-radius:10px;border:1px solid #3B5B93;background:#fff;color:#16203A;font-family:inherit;resize:vertical}
+#sheet textarea{width:100%;min-height:60px;max-width:100%;font-size:17px;line-height:1.5;padding:10px;border-radius:10px;border:1px solid #3B5B93;background:#fff;color:#16203A;font-family:inherit;resize:vertical}
 #sheet .ft3{display:flex;gap:8px;justify-content:flex-end;align-items:center}
 #sheet .ft3 .lbl{margin-right:auto;color:#FFD24A}
 #sheet .pri{background:var(--orange)}
@@ -431,13 +431,13 @@ body.sheet-on #sheet{display:flex}
 </div>
 <!-- スマホ用：文字の打ち替え。contenteditable ではなく普通の入力欄を使う（iOSで確実に動く） -->
 <div id="sheet">
-  <div class="hd3"><b>文字を直す</b><span class="lbl">一部だけ変えたいときは、下の欄で範囲を選んでからボタンを押します</span></div>
+  <div class="hd3"><b>文字を直す</b><span class="lbl">打った文字はスライドにそのまま反映されます。一部だけ変えるときは範囲を選んでからボタン</span></div>
   <div class="tools">
     <button data-psz="1">A＋</button><button data-psz="-1">A−</button><button data-pbold>太字</button><button data-pmk>マーカー</button>
     <span id="pCols"></span><button data-pclear>書式を外す</button>
   </div>
   <textarea id="sheetTa" rows="3" autocapitalize="off" autocorrect="off"></textarea>
-  <div class="ft3"><span class="lbl" id="sheetMsg"></span><button id="sheetCancel">閉じる</button><button id="sheetOk" class="pri">完了</button></div>
+  <div class="ft3"><span class="lbl" id="sheetMsg"></span><button id="sheetCancel">取り消す</button><button id="sheetOk" class="pri">完了</button></div>
 </div>
 <input type="file" id="fileIn" accept="image/*" multiple="" hidden="">
 <div id="drop"><div><b>ここに画像をドロップ</b><span>ファイル名にIDがあれば自動、なければ次の画面で選べます</span></div></div>
@@ -1746,18 +1746,57 @@ body.sheet-on #sheet{display:flex}
       if(!eDone){ r.setEnd(el,el.childNodes.length); }
       return r;
     }
+    let shOld='';                       /* シートを開いた時点の中身（取り消し用） */
+    /* 入力欄の1行の文字数を、実際の要素と同じにする。
+       入力欄の文字は16px以上に保つ（iOSが勝手に拡大するため）ので、
+       収まらないときは幅いっぱいにして、スライド側のライブ表示で行の折れ方を確認してもらう */
+    function fitTa(){
+      const st=getComputedStyle(shEl), fs=parseFloat(st.fontSize)||24;
+      const cw=shEl.clientWidth-parseFloat(st.paddingLeft)-parseFloat(st.paddingRight);
+      const box=ta.parentElement.getBoundingClientRect();
+      const avail=Math.max(200, box.width-16-22);        /* シートの余白と入力欄の枠ぶん */
+      let taFs=17, w=cw*taFs/fs;
+      if(w>avail){ taFs=Math.max(16, avail*fs/cw); w=Math.min(avail, cw*taFs/fs); }
+      ta.style.boxSizing='content-box';
+      ta.style.width=Math.round(w)+'px';
+      ta.style.fontSize=taFs.toFixed(2)+'px';
+      ta.style.fontFamily=st.fontFamily;
+      ta.style.fontWeight=st.fontWeight;
+      ta.style.lineHeight=st.lineHeight==='normal'?'1.5':(parseFloat(st.lineHeight)/fs).toFixed(2);
+      const ls=st.letterSpacing==='normal'?0:parseFloat(st.letterSpacing);
+      ta.style.letterSpacing=(ls*taFs/fs).toFixed(2)+'px';
+      ta.style.textAlign=st.textAlign==='start'?'left':st.textAlign;
+      grow();
+    }
+    function grow(){ ta.style.height='auto'; ta.style.height=Math.min(Math.max(ta.scrollHeight,60), innerHeight*0.32)+'px'; }
     function openSheet(){
-      if(!sel) return; shEl=sel; ta.value=elToText(sel); sheetMsg.textContent='';
+      if(!sel) return; shEl=sel; shOld=sel.innerHTML; ta.value=elToText(sel); sheetMsg.textContent='';
       document.body.classList.add('sheet-on'); mbar.style.display='none';
+      fitTa();
+      /* 直している要素がシートの上に見えるようにスクロールする */
+      const barB=document.getElementById('bar').getBoundingClientRect().bottom||0;
+      const r=shEl.getBoundingClientRect(), shTop=sheet.getBoundingClientRect().top;
+      if(r.top<barB+8 || r.bottom>shTop-8) scrollBy({top:r.top-barB-16, behavior:'instant'});
       setTimeout(()=>{ try{ ta.focus({preventScroll:true}); }catch(e){ ta.focus(); } },60);
     }
-    function closeSheet(){ document.body.classList.remove('sheet-on'); mbar.style.display=''; shEl=null; ta.blur(); mSync(); }
-    /* 入力欄の文字を要素へ戻す。変わった部分だけ差し替えるので、他の部分の書式は残る */
+    function closeSheet(keep){
+      if(shEl){
+        if(!keep) shEl.innerHTML=shOld;                                   /* 取り消す */
+        else if(shEl.innerHTML!==shOld){ undo.push({el:shEl,prop:'innerHTML',old:shOld}); if(undo.length>200) undo.shift(); }
+        save();
+      }
+      document.body.classList.remove('sheet-on'); mbar.style.display=''; shEl=null; ta.blur(); mSync();
+    }
+    /* 入力欄の文字を要素へ戻す。変わった部分だけ差し替えるので、他の部分の書式は残る。
+       打っている間もその都度反映するので、スライド側で本当の行の折れ方が見える */
+    let composing=false, liveT=null;
+    ta.addEventListener('compositionstart',()=>{ composing=true; });
+    ta.addEventListener('compositionend',()=>{ composing=false; commitText(); });
+    ta.addEventListener('input',()=>{ grow(); if(composing) return; clearTimeout(liveT); liveT=setTimeout(commitText,60); });
     function commitText(){
       if(!shEl) return;
       const oldT=elToText(shEl), newT=ta.value;
       if(oldT===newT) return;
-      undo.push({el:shEl,prop:'innerHTML',old:shEl.innerHTML});
       let p=0; while(p<oldT.length&&p<newT.length&&oldT[p]===newT[p]) p++;
       let q=0; while(q<oldT.length-p&&q<newT.length-p&&oldT[oldT.length-1-q]===newT[newT.length-1-q]) q++;
       const r=rangeFromOffsets(shEl,p,oldT.length-q);
@@ -1775,7 +1814,6 @@ body.sheet-on #sheet{display:flex}
       const a=ta.selectionStart, b=ta.selectionEnd;
       if(a===b){ sheetMsg.textContent='変えたい文字を選んでから押してください'; return; }
       commitText();
-      undo.push({el:shEl,prop:'innerHTML',old:shEl.innerHTML});
       const r=rangeFromOffsets(shEl,a,b);
       if(clear) clearRange(r,shEl); else applyWrap(r,fn);
       tidy(shEl); save(); sheetMsg.textContent='「'+ta.value.slice(a,b).slice(0,12)+'」に反映しました';
@@ -1792,8 +1830,8 @@ body.sheet-on #sheet{display:flex}
       const d=document.createElement('span'); d.className='cs'; d.style.background=c;
       tap2(d,()=>shApply(sp=>sp.style.color=c)); document.getElementById('pCols').appendChild(d);
     });
-    document.getElementById('sheetOk').onclick=()=>{ commitText(); closeSheet(); };
-    document.getElementById('sheetCancel').onclick=()=>closeSheet();
+    document.getElementById('sheetOk').onclick=()=>{ commitText(); closeSheet(true); };
+    document.getElementById('sheetCancel').onclick=()=>closeSheet(false);
     /* キーボードが出たら、その上にシートを置く */
     if(window.visualViewport){
       const vv=window.visualViewport;
