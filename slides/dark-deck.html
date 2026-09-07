@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>ビジネススライド（ダーク版・編集可能）</title>
+<style>
+/* ============================================================
+   ダーク×高コントラストのビジネススライド / 1600 x 900 (16:9)
+   ブラウザで開いて右上の「編集」を押すと、文字サイズ・太さ・字間・
+   行間・色・揃え・位置をその場で変えられる。
+   ------------------------------------------------------------
+   全体の見た目は下の :root を書き換えると一括で変わる。
+   ============================================================ */
+
+:root{
+  /* --- 地と面 --- */
+  --bg:      #0E1116;   /* スライドの地。純黒より少し明るく、印刷でつぶれない */
+  --panel:   #171C24;   /* カード・パネル */
+  --panel-2: #1F2630;   /* 一段明るい面 */
+  --line:    #2C3542;   /* 罫線 */
+
+  /* --- 文字 --- */
+  --text:    #F0EDE6;   /* 本文。青みの地に対して少し暖かい白 */
+  --muted:   #96A1B0;   /* 補足 */
+  --dim:     #6A7482;   /* 最も弱い文字。これより薄い色は使わない */
+
+  /* --- signal：1スライドにつき「見てほしい1箇所」だけに使う --- */
+  --accent:  #5CE1E6;   /* シアン */
+  --warn:    #F2795B;   /* 減少・注意。多用しない */
+
+  /* --- 版面 --- */
+  --pad-x:   96px;      /* 左右の余白 */
+  --pad-t:   62px;      /* 上の余白 */
+  --pad-b:   54px;      /* 下の余白 */
+
+  /* --- 文字サイズ（ここを変えると全ページ効く） --- */
+  --fs-title:   46px;   /* スライドの見出し */
+  --fs-body:    24px;   /* 本文の下限。これ以下にしない */
+  --fs-sub:     21px;   /* 補足 */
+  --fs-label:   18px;   /* ラベル・脚注 */
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  background:#05070A;
+  display:flex;flex-direction:column;align-items:center;gap:26px;
+  padding:88px 0 60px;
+  font-family:"Helvetica Neue","Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic Medium","Yu Gothic",Meiryo,"Noto Sans CJK JP",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+.slide{
+  position:relative;
+  width:1600px;height:900px;flex:0 0 auto;
+  background:var(--bg);color:var(--text);
+  font-size:var(--fs-body);line-height:1.65;
+  padding:var(--pad-t) var(--pad-x) var(--pad-b);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* 下端の進行バー：デッキのどこを読んでいるかを示す */
+.prog{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);opacity:.9}
+
+/* --- 見出しゾーン --- */
+.eyebrow{font-size:var(--fs-label);font-weight:700;letter-spacing:.22em;color:var(--accent)}
+.hd{flex:0 0 auto;margin-bottom:34px}
+.hd h2{font-size:var(--fs-title);font-weight:700;line-height:1.3;letter-spacing:.01em;margin-top:14px}
+.hd .lede{font-size:var(--fs-sub);color:var(--muted);margin-top:12px;max-width:1180px}
+.rule{height:1px;background:var(--line);margin-top:22px}
+
+/* 章番号の大きな白抜き数字（シグネチャ） */
+.bignum{
+  position:absolute;right:74px;top:44px;
+  font-size:150px;font-weight:800;line-height:1;letter-spacing:-.02em;
+  color:transparent;-webkit-text-stroke:2px var(--line);
+  pointer-events:none;
+}
+
+.bd{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.ft{flex:0 0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:40px;
+    margin-top:22px;font-size:var(--fs-label);color:var(--dim)}
+.ft .pg{font-weight:700;color:var(--muted);letter-spacing:.1em}
+
+/* --- 部品 --- */
+.box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px 30px}
+.box.plain{background:none}
+.box.lit{border-color:var(--accent)}
+.kicker{font-size:var(--fs-label);font-weight:700;letter-spacing:.16em;color:var(--accent)}
+.h3{font-size:29px;font-weight:700;line-height:1.4}
+.muted{color:var(--muted)}
+.dim{color:var(--dim)}
+.sub{font-size:var(--fs-sub);line-height:1.6;color:var(--muted)}
+.big{font-size:96px;font-weight:800;line-height:1;letter-spacing:-.02em}
+.big .u{font-size:30px;font-weight:700;margin-left:6px;letter-spacing:0}
+.lit{color:var(--accent)}
+.row{display:grid;align-items:center;gap:26px;padding:18px 22px;border-bottom:1px solid var(--line)}
+.row.head{border-bottom:1px solid var(--accent);font-size:var(--fs-sub);font-weight:700;color:var(--accent);letter-spacing:.06em;padding-bottom:14px}
+.row.last{border-bottom:none}
+.row.on{background:var(--panel)}
+.bar{height:26px;background:var(--panel-2);border-radius:2px;position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);display:block}
+.bar i.mute{background:#3B4655}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:7px 18px;font-size:var(--fs-sub);color:var(--muted);margin-right:10px}
+
+/* ============ 編集モードのUI ============ */
+#bar{position:fixed;top:0;left:0;right:0;height:56px;z-index:60;
+     background:#0A0D12;border-bottom:1px solid #222A34;
+     display:flex;align-items:center;gap:12px;padding:0 20px;
+     font:600 14px/1 -apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:#C9D2DE}
+#bar .sp{flex:1}
+#bar button{background:#1A212B;color:#D6DEE9;border:1px solid #2C3542;border-radius:8px;
+            padding:9px 16px;font:inherit;cursor:pointer}
+#bar button:hover{background:#232C38}
+#bar button.on{background:var(--accent);color:#05070A;border-color:var(--accent)}
+#bar .hint{color:#6A7482;font-weight:400}
+
+#panel{position:fixed;right:18px;top:74px;width:272px;z-index:60;display:none;
+       background:#10151C;border:1px solid #2C3542;border-radius:12px;padding:16px;
+       font:400 13px/1.5 -apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:#C9D2DE;
+       box-shadow:0 18px 50px rgba(0,0,0,.6);max-height:calc(100vh - 100px);overflow:auto}
+#panel.show{display:block}
+#panel h4{font-size:12px;letter-spacing:.1em;color:#6A7482;margin:14px 0 7px;font-weight:700}
+#panel h4:first-child{margin-top:0}
+#panel .g{display:flex;gap:6px;flex-wrap:wrap}
+#panel .g button{flex:1;min-width:38px;background:#1A212B;color:#C9D2DE;border:1px solid #2C3542;
+                 border-radius:7px;padding:8px 0;font:inherit;cursor:pointer}
+#panel .g button:hover{background:#252F3B}
+#panel input[type=range]{width:100%}
+#panel .val{float:right;color:#8B95A3;font-variant-numeric:tabular-nums}
+#panel .sw{width:30px;height:30px;border-radius:7px;border:1px solid #3A4552;cursor:pointer;flex:0 0 auto}
+#panel .path{font-size:11px;color:#5F6975;word-break:break-all;margin-bottom:10px}
+
+.ed-on .ed:hover{outline:1px dashed rgba(92,225,230,.5);outline-offset:3px;cursor:pointer}
+.ed-sel{outline:2px solid var(--accent) !important;outline-offset:3px}
+.ed-on .slide{cursor:default}
+
+@media print{
+  @page{size:1600px 900px;margin:0}
+  body{background:#fff;padding:0;gap:0;display:block}
+  #bar,#panel{display:none !important}
+  .slide{break-after:page;page-break-after:always;box-shadow:none}
+  .ed-sel{outline:none !important}
+}
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <button id="btnEdit">編集モード</button>
+  <button id="btnUndo">元に戻す</button>
+  <button id="btnReset">初期化</button>
+  <span class="sp"></span>
+  <span class="hint" id="hint">クリックで選択 ／ ドラッグで移動 ／ ダブルクリックで文字を直接編集 ／ 矢印キーで微調整</span>
+  <button id="btnExport">HTMLを書き出す</button>
+  <button id="btnPrint">PDFにする</button>
+</div>
+
+<div id="panel">
+  <div class="path" id="pPath"></div>
+  <h4>文字サイズ <span class="val" id="vFs"></span></h4>
+  <input type="range" id="rFs" min="12" max="150" step="1">
+  <div class="g" style="margin-top:6px">
+    <button data-fs="-4">−4</button><button data-fs="-1">−1</button>
+    <button data-fs="1">＋1</button><button data-fs="4">＋4</button>
+  </div>
+  <h4>太さ</h4>
+  <div class="g">
+    <button data-fw="300">細</button><button data-fw="400">標準</button>
+    <button data-fw="700">太</button><button data-fw="800">極太</button>
+  </div>
+  <h4>字間 <span class="val" id="vLs"></span></h4>
+  <input type="range" id="rLs" min="-8" max="30" step="1">
+  <h4>行間 <span class="val" id="vLh"></span></h4>
+  <input type="range" id="rLh" min="100" max="260" step="5">
+  <h4>色</h4>
+  <div class="g" id="sw"></div>
+  <h4>揃え</h4>
+  <div class="g">
+    <button data-ta="left">左</button><button data-ta="center">中央</button><button data-ta="right">右</button>
+  </div>
+  <h4>位置 <span class="val" id="vPos"></span></h4>
+  <div class="g">
+    <button data-mv="0,-8">↑</button><button data-mv="-8,0">←</button>
+    <button data-mv="8,0">→</button><button data-mv="0,8">↓</button>
+  </div>
+  <div class="g" style="margin-top:6px">
+    <button id="bCenter">左右中央に</button><button id="bPos0">位置を戻す</button>
+  </div>
+  <h4>その他</h4>
+  <div class="g">
+    <button id="bHide">非表示</button><button id="bClear">書式を戻す</button>
+  </div>
+</div>
+
+<div id="deck">
+
+<!-- ===== 01 表紙 ===== -->
+<div class="slide" style="justify-content:center">
+  <div style="max-width:1180px">
+    <p class="eyebrow">SERVICE / PRODUCT INTRODUCTION</p>
+    <h1 style="font-size:88px;font-weight:800;line-height:1.16;letter-spacing:-.01em;margin-top:26px">
+      ここに<span class="lit">一番伝えたいこと</span>を<br>1行か2行で置く
+    </h1>
+    <p class="sub" style="font-size:27px;margin-top:28px;max-width:900px">サブコピー。誰の何をどう変えるサービスなのかを、20〜40字で言い切る。</p>
+    <p style="margin-top:40px">
+      <span class="tag">キーワード1</span><span class="tag">キーワード2</span><span class="tag">キーワード3</span>
+    </p>
+  </div>
+  <div style="position:absolute;left:var(--pad-x);right:var(--pad-x);bottom:54px;display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--line);padding-top:26px">
+    <div style="display:flex;gap:64px">
+      <div><p class="big" style="font-size:56px">00<span class="u lit">単位</span></p><p class="sub" style="font-size:18px;margin-top:6px">数字の説明</p></div>
+      <div><p class="big" style="font-size:56px">00<span class="u lit">単位</span></p><p class="sub" style="font-size:18px;margin-top:6px">数字の説明</p></div>
+      <div><p class="big" style="font-size:56px">00<span class="u lit">単位</span></p><p class="sub" style="font-size:18px;margin-top:6px">数字の説明</p></div>
+    </div>
+    <div style="text-align:right">
+      <p style="font-size:24px;font-weight:700">会社名</p>
+      <p class="dim" style="font-size:18px;margin-top:4px">2026.09</p>
+    </div>
+  </div>
+  <div class="prog" style="width:5%"></div>
+</div>
+
+<!-- ===== 02 目次 ===== -->
+<div class="slide">
+  <div class="bignum">01</div>
+  <div class="hd">
+    <p class="eyebrow">CONTENTS</p>
+    <h2>この資料でお伝えすること</h2>
+    <div class="rule"></div>
+  </div>
+  <div class="bd">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px 40px;flex:1 1 auto">
+      <div class="box" style="display:flex;gap:26px;align-items:flex-start">
+        <p style="font-size:38px;font-weight:800;color:var(--accent);line-height:1.1">01</p>
+        <div><p class="h3">章タイトル</p><p class="sub" style="margin-top:6px">この章で何を示すのかを1行で。</p></div>
+      </div>
+      <div class="box" style="display:flex;gap:26px;align-items:flex-start">
+        <p style="font-size:38px;font-weight:800;color:var(--accent);line-height:1.1">02</p>
+        <div><p class="h3">章タイトル</p><p class="sub" style="margin-top:6px">この章で何を示すのかを1行で。</p></div>
+      </div>
+      <div class="box" style="display:flex;gap:26px;align-items:flex-start">
+        <p style="font-size:38px;font-weight:800;color:var(--accent);line-height:1.1">03</p>
+        <div><p class="h3">章タイトル</p><p class="sub" style="margin-top:6px">この章で何を示すのかを1行で。</p></div>
+      </div>
+      <div class="box" style="display:flex;gap:26px;align-items:flex-start">
+        <p style="font-size:38px;font-weight:800;color:var(--accent);line-height:1.1">04</p>
+        <div><p class="h3">章タイトル</p><p class="sub" style="margin-top:6px">この章で何を示すのかを1行で。</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>脚注や前提条件をここに書く</span><span class="pg">02</span></div>
+  <div class="prog" style="width:16%"></div>
+</div>
+
+<!-- ===== 03 主張＋根拠3つ ===== -->
+<div class="slide">
+  <div class="bignum">02</div>
+  <div class="hd">
+    <p class="eyebrow">ISSUE</p>
+    <h2>ここに<span class="lit">結論</span>を書く。タイトルは主張であって、話題名にしない</h2>
+    <p class="lede">その主張がなぜ成り立つのかを、1行で補足する。</p>
+    <div class="rule"></div>
+  </div>
+  <div class="bd">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;flex:1 1 auto">
+      <div class="box" style="display:flex;flex-direction:column">
+        <p class="kicker">POINT 01</p>
+        <p class="h3" style="margin-top:12px">根拠の見出し</p>
+        <p class="sub" style="margin-top:12px">その根拠の中身を2〜3行で。数字があれば必ず入れる。</p>
+        <p class="big lit" style="font-size:64px;margin-top:auto">00<span class="u">%</span></p>
+      </div>
+      <div class="box" style="display:flex;flex-direction:column">
+        <p class="kicker">POINT 02</p>
+        <p class="h3" style="margin-top:12px">根拠の見出し</p>
+        <p class="sub" style="margin-top:12px">その根拠の中身を2〜3行で。数字があれば必ず入れる。</p>
+        <p class="big lit" style="font-size:64px;margin-top:auto">00<span class="u">件</span></p>
+      </div>
+      <div class="box lit" style="display:flex;flex-direction:column">
+        <p class="kicker">POINT 03</p>
+        <p class="h3" style="margin-top:12px">根拠の見出し</p>
+        <p class="sub" style="margin-top:12px">その根拠の中身を2〜3行で。数字があれば必ず入れる。</p>
+        <p class="big lit" style="font-size:64px;margin-top:auto">00<span class="u">倍</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>出典・前提</span><span class="pg">03</span></div>
+  <div class="prog" style="width:27%"></div>
+</div>
+
+<!-- ===== 04 数字を主役に ===== -->
+<div class="slide">
+  <div class="bignum">03</div>
+  <div class="hd">
+    <p class="eyebrow">KEY NUMBERS</p>
+    <h2>数字は、説明ではなく<span class="lit">主張</span>として置く</h2>
+    <div class="rule"></div>
+  </div>
+  <div class="bd" style="justify-content:center">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
+      <div style="padding-right:56px">
+        <p class="big">00<span class="u lit">%</span></p>
+        <p class="h3" style="margin-top:16px">この数字が意味すること</p>
+        <p class="sub" style="margin-top:8px">どう算出した数字なのかを1行で添える。</p>
+      </div>
+      <div style="padding:0 56px;border-left:1px solid var(--line)">
+        <p class="big">00<span class="u lit">件</span></p>
+        <p class="h3" style="margin-top:16px">この数字が意味すること</p>
+        <p class="sub" style="margin-top:8px">どう算出した数字なのかを1行で添える。</p>
+      </div>
+      <div style="padding-left:56px;border-left:1px solid var(--line)">
+        <p class="big">00<span class="u lit">倍</span></p>
+        <p class="h3" style="margin-top:16px">この数字が意味すること</p>
+        <p class="sub" style="margin-top:8px">どう算出した数字なのかを1行で添える。</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>出典：　／　いずれも実績値であり、条件により異なる</span><span class="pg">04</span></div>
+  <div class="prog" style="width:38%"></div>
+</div>
+
+<!-- ===== 05 比較表 ===== -->
+<div class="slide">
+  <div class="bignum">04</div>
+  <div class="hd">
+    <p class="eyebrow">COMPARISON</p>
+    <h2>比較は、勝ち負けではなく<span class="lit">選ぶ基準</span>を示す</h2>
+    <div class="rule"></div>
+  </div>
+  <div class="bd">
+    <div class="row head" style="grid-template-columns:280px 1fr 1fr 1fr">
+      <span>比較軸</span><span style="color:var(--accent)">自社</span><span class="muted">選択肢A</span><span class="muted">選択肢B</span>
+    </div>
+    <div class="row on" style="grid-template-columns:280px 1fr 1fr 1fr;flex:1 1 auto">
+      <span style="font-weight:700">軸の名前</span><span class="lit" style="font-weight:700">自社の内容</span><span class="muted">内容</span><span class="muted">内容</span>
+    </div>
+    <div class="row" style="grid-template-columns:280px 1fr 1fr 1fr;flex:1 1 auto">
+      <span style="font-weight:700">軸の名前</span><span>自社の内容</span><span class="muted">内容</span><span class="muted">内容</span>
+    </div>
+    <div class="row on" style="grid-template-columns:280px 1fr 1fr 1fr;flex:1 1 auto">
+      <span style="font-weight:700">軸の名前</span><span>自社の内容</span><span class="muted">内容</span><span class="muted">内容</span>
+    </div>
+    <div class="row last" style="grid-template-columns:280px 1fr 1fr 1fr;flex:1 1 auto">
+      <span style="font-weight:700">軸の名前</span><span>自社の内容</span><span class="muted">内容</span><span class="muted">内容</span>
+    </div>
+  </div>
+  <div class="ft"><span>比較内容は　時点の公開情報にもとづく</span><span class="pg">05</span></div>
+  <div class="prog" style="width:49%"></div>
+</div>
+
+<!-- ===== 06 プロセス ===== -->
+<div class="slide">
+  <div class="bignum">05</div>
+  <div class="hd">
+    <p class="eyebrow">PROCESS</p>
+    <h2>進め方は、<span class="lit">誰が何をするか</span>まで書く</h2>
+    <div class="rule"></div>
+  </div>
+  <div class="bd">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;flex:1 1 auto">
+      <div class="box" style="display:flex;flex-direction:column">
+        <p class="kicker">STEP 01</p>
+        <p class="h3" style="margin-top:10px">ステップ名</p>
+        <p class="sub" style="margin-top:10px">この段階で何が起きるか。</p>
+        <p class="sub" style="margin-top:auto;color:var(--accent)">担当：　／　期間：</p>
+      </div>
+      <div class="box" style="display:flex;flex-direction:column">
+        <p class="kicker">STEP 02</p>
+        <p class="h3" style="margin-top:10px">ステップ名</p>
+        <p class="sub" style="margin-top:10px">この段階で何が起きるか。</p>
+        <p class="sub" style="margin-top:auto;color:var(--accent)">担当：　／　期間：</p>
+      </div>
+      <div class="box" style="display:flex;flex-direction:column">
+        <p class="kicker">STEP 03</p>
+        <p class="h3" style="margin-top:10px">ステップ名</p>
+        <p class="sub" style="margin-top:10px">この段階で何が起きるか。</p>
+        <p class="sub" style="margin-top:auto;color:var(--accent)">担当：　／　期間：</p>
+      </div>
+      <div class="box lit" style="display:flex;flex-direction:column">
+        <p class="kicker">STEP 04</p>
+        <p class="h3" style="margin-top:10px">ステップ名</p>
+        <p class="sub" style="margin-top:10px">この段階で何が起きるか。</p>
+        <p class="sub" style="margin-top:auto;color:var(--accent)">担当：　／　期間：</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>期間は目安</span><span class="pg">06</span></div>
+  <div class="prog" style="width:60%"></div>
+</div>
+
+<!-- ===== 07 データ（横棒） ===== -->
+<div class="slide">
+  <div class="bignum">06</div>
+  <div class="hd">
+    <p class="eyebrow">DATA</p>
+    <h2>グラフの見出しは、<span class="lit">読み取れる結論</span>を書く</h2>
+    <p class="lede">グラフは根拠であって、主役ではない。</p>
+    <div class="rule"></div>
+  </div>
+  <div class="bd" style="flex-direction:row;gap:64px">
+    <div style="flex:1.4 1 0;display:flex;flex-direction:column;justify-content:center;gap:24px">
+      <div style="display:grid;grid-template-columns:220px 1fr 110px;align-items:center;gap:22px">
+        <span class="sub" style="color:var(--text)">項目A</span>
+        <span class="bar"><i style="width:82%"></i></span>
+        <span style="font-size:28px;font-weight:700;text-align:right">00</span>
+      </div>
+      <div style="display:grid;grid-template-columns:220px 1fr 110px;align-items:center;gap:22px">
+        <span class="sub" style="color:var(--text)">項目B</span>
+        <span class="bar"><i class="mute" style="width:54%"></i></span>
+        <span style="font-size:28px;font-weight:700;text-align:right" class="muted">00</span>
+      </div>
+      <div style="display:grid;grid-template-columns:220px 1fr 110px;align-items:center;gap:22px">
+        <span class="sub" style="color:var(--text)">項目C</span>
+        <span class="bar"><i class="mute" style="width:38%"></i></span>
+        <span style="font-size:28px;font-weight:700;text-align:right" class="muted">00</span>
+      </div>
+      <div style="display:grid;grid-template-columns:220px 1fr 110px;align-items:center;gap:22px">
+        <span class="sub" style="color:var(--text)">項目D</span>
+        <span class="bar"><i class="mute" style="width:21%"></i></span>
+        <span style="font-size:28px;font-weight:700;text-align:right" class="muted">00</span>
+      </div>
+    </div>
+    <div style="flex:1 1 0;display:flex;flex-direction:column;justify-content:center;gap:22px">
+      <div class="box lit">
+        <p class="kicker">READ THIS</p>
+        <p class="h3" style="margin-top:10px">このグラフから言えること</p>
+        <p class="sub" style="margin-top:10px">なぜそう言えるのかを2〜3行で。読み手に解釈させない。</p>
+      </div>
+      <div class="box plain" style="border:none;padding:0 0 0 22px;border-left:1px solid var(--line)">
+        <p class="sub">補足や、この数字の前提条件をここに置く。</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>出典：　／　単位：</span><span class="pg">07</span></div>
+  <div class="prog" style="width:71%"></div>
+</div>
+
+<!-- ===== 08 まとめとCTA ===== -->
+<div class="slide" style="justify-content:center">
+  <div style="max-width:1120px">
+    <p class="eyebrow">NEXT STEP</p>
+    <h2 style="font-size:64px;font-weight:800;line-height:1.28;margin-top:24px">
+      次にやることを、<br><span class="lit">相手が動ける粒度</span>で書く。
+    </h2>
+    <p class="sub" style="font-size:25px;margin-top:24px;max-width:880px">所要時間・やること・その場で持ち帰れるものを添えると、返事が来やすくなる。</p>
+  </div>
+  <div style="position:absolute;right:var(--pad-x);top:180px;width:520px;display:flex;flex-direction:column;gap:16px">
+    <div class="box"><p class="kicker">01</p><p class="h3" style="margin-top:8px;font-size:25px">持ち帰れるもの</p></div>
+    <div class="box"><p class="kicker">02</p><p class="h3" style="margin-top:8px;font-size:25px">持ち帰れるもの</p></div>
+    <div class="box"><p class="kicker">03</p><p class="h3" style="margin-top:8px;font-size:25px">持ち帰れるもの</p></div>
+  </div>
+  <div style="position:absolute;left:var(--pad-x);right:var(--pad-x);bottom:54px;border-top:1px solid var(--line);padding-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:56px">
+    <div>
+      <p class="kicker">CONTACT</p>
+      <p style="font-size:28px;font-weight:700;margin-top:10px">担当者名</p>
+      <p class="sub" style="margin-top:4px">部署／役職</p>
+      <p style="font-size:24px;font-weight:700;margin-top:10px;color:var(--accent)">000-0000-0000　<span style="color:var(--text)">mail@example.com</span></p>
+    </div>
+    <div style="border-left:1px solid var(--line);padding-left:56px">
+      <p class="kicker">COMPANY</p>
+      <p style="font-size:26px;font-weight:700;margin-top:10px">会社名</p>
+      <p class="sub" style="margin-top:6px">所在地／Webサイト</p>
+    </div>
+  </div>
+  <div class="prog" style="width:100%"></div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const deck = document.getElementById('deck');
+  const panel = document.getElementById('panel');
+  const KEY = 'dark-deck-v1';
+  let editing = false, sel = null, undo = [];
+
+  /* 編集対象にする要素を用意する。
+     テキストを直接持つ要素と、枠（.box）を対象にする。 */
+  function tag(){
+    deck.querySelectorAll('.slide *').forEach(el=>{
+      if (el.closest('#bar,#panel')) return;
+      const hasText = [...el.childNodes].some(n=>n.nodeType===3 && n.textContent.trim());
+      if (hasText || el.classList.contains('box') || el.classList.contains('bar')) el.classList.add('ed');
+    });
+  }
+  tag();
+
+  /* --- 保存と復元（file:// では効かないことがあるので保険付き） --- */
+  const save = () => { try{ localStorage.setItem(KEY, deck.innerHTML); }catch(e){} };
+  try{
+    const saved = localStorage.getItem(KEY);
+    if (saved) { deck.innerHTML = saved; }
+  }catch(e){}
+
+  /* --- 選択 --- */
+  function select(el){
+    if (sel) sel.classList.remove('ed-sel');
+    sel = el;
+    if (!sel){ panel.classList.remove('show'); return; }
+    sel.classList.add('ed-sel');
+    panel.classList.add('show');
+    sync();
+  }
+  function cs(p){ return getComputedStyle(sel)[p]; }
+  function sync(){
+    const fs = parseFloat(cs('fontSize'));
+    document.getElementById('rFs').value = Math.round(fs);
+    document.getElementById('vFs').textContent = Math.round(fs)+'px';
+    const ls = cs('letterSpacing'); const lsn = ls==='normal'?0:parseFloat(ls);
+    document.getElementById('rLs').value = Math.round(lsn*10)/10*10/10*10 |0;
+    document.getElementById('rLs').value = Math.round(lsn);
+    document.getElementById('vLs').textContent = (Math.round(lsn*10)/10)+'px';
+    const lh = parseFloat(cs('lineHeight'))/fs*100;
+    document.getElementById('rLh').value = Math.round(lh);
+    document.getElementById('vLh').textContent = (Math.round(lh)/100).toFixed(2);
+    const m = /translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(sel.style.transform||'');
+    document.getElementById('vPos').textContent = m ? `${m[1]}, ${m[2]}` : '0, 0';
+    document.getElementById('pPath').textContent =
+      sel.tagName.toLowerCase() + (sel.className ? '.'+sel.className.replace('ed','').replace('ed-sel','').trim().split(/\s+/).join('.') : '');
+  }
+
+  /* --- 変更を記録してから適用する --- */
+  function set(prop, value){
+    if (!sel) return;
+    undo.push({el:sel, prop, old:sel.style[prop]});
+    if (undo.length > 200) undo.shift();
+    sel.style[prop] = value;
+    save(); sync();
+  }
+
+  deck.addEventListener('click', e=>{
+    if (!editing) return;
+    const el = e.target.closest('.ed');
+    if (!el || !deck.contains(el)) return;
+    e.preventDefault(); e.stopPropagation();
+    select(e.altKey && sel ? (sel.parentElement.closest('.ed')||el) : el);
+  });
+  deck.addEventListener('dblclick', e=>{
+    if (!editing) return;
+    const el = e.target.closest('.ed');
+    if (!el) return;
+    el.contentEditable = 'true'; el.focus();
+    el.addEventListener('blur', ()=>{ el.contentEditable='false'; save(); }, {once:true});
+  });
+
+  /* --- ドラッグで移動 --- */
+  let drag = null;
+  deck.addEventListener('mousedown', e=>{
+    if (!editing) return;
+    const el = e.target.closest('.ed');
+    if (!el || el.isContentEditable) return;
+    const m = /translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(el.style.transform||'');
+    drag = {el, sx:e.clientX, sy:e.clientY, ox:m?+m[1]:0, oy:m?+m[2]:0, moved:false};
+  });
+  window.addEventListener('mousemove', e=>{
+    if (!drag) return;
+    const dx = e.clientX-drag.sx, dy = e.clientY-drag.sy;
+    if (!drag.moved && Math.abs(dx)+Math.abs(dy) < 4) return;
+    if (!drag.moved){ drag.moved = true; undo.push({el:drag.el, prop:'transform', old:drag.el.style.transform}); select(drag.el); }
+    drag.el.style.transform = `translate(${drag.ox+dx}px, ${drag.oy+dy}px)`;
+  });
+  window.addEventListener('mouseup', ()=>{ if (drag && drag.moved){ save(); sync(); } drag = null; });
+
+  /* --- パネルの操作 --- */
+  document.getElementById('rFs').addEventListener('input', e=> set('fontSize', e.target.value+'px'));
+  document.getElementById('rLs').addEventListener('input', e=> set('letterSpacing', e.target.value+'px'));
+  document.getElementById('rLh').addEventListener('input', e=> set('lineHeight', (e.target.value/100).toFixed(2)));
+  panel.querySelectorAll('[data-fs]').forEach(b=> b.onclick = ()=>{
+    if(!sel) return; set('fontSize', (parseFloat(cs('fontSize'))+ +b.dataset.fs)+'px');
+  });
+  panel.querySelectorAll('[data-fw]').forEach(b=> b.onclick = ()=> set('fontWeight', b.dataset.fw));
+  panel.querySelectorAll('[data-ta]').forEach(b=> b.onclick = ()=> set('textAlign', b.dataset.ta));
+  panel.querySelectorAll('[data-mv]').forEach(b=> b.onclick = ()=>{
+    if(!sel) return;
+    const [dx,dy] = b.dataset.mv.split(',').map(Number);
+    const m = /translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(sel.style.transform||'');
+    set('transform', `translate(${(m?+m[1]:0)+dx}px, ${(m?+m[2]:0)+dy}px)`);
+  });
+  document.getElementById('bPos0').onclick = ()=> set('transform','');
+  document.getElementById('bCenter').onclick = ()=>{ set('marginLeft','auto'); set('marginRight','auto'); };
+  document.getElementById('bHide').onclick = ()=> set('display','none');
+  document.getElementById('bClear').onclick = ()=>{
+    if(!sel) return;
+    undo.push({el:sel, prop:'cssText', old:sel.style.cssText});
+    sel.style.cssText = ''; save(); sync();
+  };
+  ['#F0EDE6','#96A1B0','#6A7482','#5CE1E6','#F2795B','#FFFFFF'].forEach(c=>{
+    const b = document.createElement('div');
+    b.className = 'sw'; b.style.background = c; b.title = c;
+    b.onclick = ()=> set('color', c);
+    document.getElementById('sw').appendChild(b);
+  });
+
+  /* --- キーボード --- */
+  window.addEventListener('keydown', e=>{
+    if (!editing || !sel || sel.isContentEditable) return;
+    if (e.key === 'Escape'){ select(null); return; }
+    if ((e.ctrlKey||e.metaKey) && e.key === 'z'){ e.preventDefault(); doUndo(); return; }
+    const step = e.shiftKey ? 10 : 1;
+    const map = {ArrowUp:[0,-step],ArrowDown:[0,step],ArrowLeft:[-step,0],ArrowRight:[step,0]};
+    if (map[e.key]){
+      e.preventDefault();
+      const [dx,dy] = map[e.key];
+      const m = /translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(sel.style.transform||'');
+      set('transform', `translate(${(m?+m[1]:0)+dx}px, ${(m?+m[2]:0)+dy}px)`);
+    }
+  });
+
+  function doUndo(){
+    const u = undo.pop(); if (!u) return;
+    if (u.prop === 'cssText') u.el.style.cssText = u.old; else u.el.style[u.prop] = u.old;
+    save(); if (sel) sync();
+  }
+
+  /* --- ツールバー --- */
+  const btnEdit = document.getElementById('btnEdit');
+  btnEdit.onclick = ()=>{
+    editing = !editing;
+    document.body.classList.toggle('ed-on', editing);
+    btnEdit.classList.toggle('on', editing);
+    btnEdit.textContent = editing ? '編集モード：ON' : '編集モード';
+    if (!editing) select(null);
+  };
+  document.getElementById('btnUndo').onclick = doUndo;
+  document.getElementById('btnReset').onclick = ()=>{
+    if (!confirm('編集内容をすべて破棄して、最初の状態に戻します。よろしいですか。')) return;
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    location.reload();
+  };
+  document.getElementById('btnPrint').onclick = ()=>{ select(null); print(); };
+  document.getElementById('btnExport').onclick = ()=>{
+    select(null);
+    const doc = document.documentElement.cloneNode(true);
+    doc.querySelectorAll('.ed-sel').forEach(el=>el.classList.remove('ed-sel'));
+    const html = '<!doctype html>\n' + doc.outerHTML;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([html], {type:'text/html'}));
+    a.download = 'deck.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+})();
+</script>
+</body>
+</html>
