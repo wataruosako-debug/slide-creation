@@ -46,6 +46,9 @@
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+#stage{position:relative;flex:0 0 auto}
+#deck{width:1600px;transform-origin:top left}
 
 body{
   background:#E7ECF3;
@@ -286,7 +289,8 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
   @page{size:1600px 900px;margin:0}
   body{background:#fff;padding:0;gap:0;display:block}
   #bar,#panel,#tip,#howto,#drop,#slots,#assign,#seltb{display:none !important}
-  #deck{zoom:1 !important}
+  #deck{transform:none !important}
+  #stage{width:auto !important;height:auto !important}
   .imgbox{outline:none !important;background:none !important;overflow:hidden !important}
   .imgbox::before,.imgbox::after{content:none !important}
   .slide{break-after:page;page-break-after:always}
@@ -370,7 +374,7 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
   <div class="btns"><button id="asCancel">やめる</button><button id="asGo" class="go">配置する</button></div>
 </div></div>
 
-<div id="deck">
+<div id="stage"><div id="deck">
 
 <!-- ============ 01 表紙 ============ -->
 <div class="slide" style="padding:0">
@@ -1014,7 +1018,7 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
       <p style="font-size:17px;font-weight:700;letter-spacing:.16em;color:var(--yellow)" class="ed leaf" spellcheck="false">COMPANY</p>
       <p style="font-size:26px;font-weight:700;margin-top:10px" class="ed leaf" spellcheck="false">株式会社ライトアップ</p>
       <p style="font-size:20px;color:#B9CDE9;margin-top:8px;line-height:1.7" class="ed leaf" spellcheck="false">東証グロース市場 6580<br>東京都渋谷区渋谷2-15-1 渋谷クロスタワー32F</p>
-    </div>
+</div></div>
   </div>
 </div>
 
@@ -1342,7 +1346,10 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
   function fit(){
     const fz=fitZoom();
     zoom = zoomMode==='fit' ? fz : zoomMode;
-    deck.style.zoom=zoom;
+    deck.style.transform = zoom===1 ? 'none' : 'scale('+zoom+')';
+    const stage=document.getElementById('stage');
+    stage.style.width  = Math.round(1600*zoom)+'px';
+    stage.style.height = Math.round(deck.offsetHeight*zoom)+'px';
     const lvl=document.getElementById('btnZlvl');
     if(lvl) lvl.textContent = zoomMode==='fit' ? '幅に合わせる' : Math.round(zoom*100)+'%';
     const bar=document.getElementById('bar'), ho=document.getElementById('howto');
