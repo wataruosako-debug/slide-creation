@@ -4,6 +4,8 @@
 
 ```
 slides/
+  ais-dl-deck.html          AIインサイトセールス DL資料（20枚・白基調・GUI編集＋インタラクション）
+  images/                   ais-dl-deck.html が読む画像置き場（KV-01.png など）
   dark-deck.html            ダーク版テンプレート（GUI編集付き・8パターン）
   ai-insight-sales-v1.html  AIインサイトセールス サービス紹介・敬体版（20枚）
   ai-insight-sales.html     AIインサイトセールス サービス紹介・常体版（20枚）
@@ -26,6 +28,18 @@ node scripts/preview-pdf.mjs slides/ai-insight-sales-v1.html preview.pdf
 ```
 
 日本語フォントは描画環境のものが使われるため、PowerPoint上の最終的な字幅とは完全には一致しない。レイアウトの確認用と考える。
+
+## DL資料 `ais-dl-deck.html`
+
+ブラウザで開くだけで動く。編集モード・PDF出力の使い方は下の「ダーク版テンプレート」と同じ。
+
+- **インタラクション**（HTMLでのみ動く。PDFでは静止する）
+  - p.6 棒にホバーするとコール数と件数
+  - p.11 各段をクリックすると絞り込み条件の説明が切り替わる
+  - p.14 ファネルの各段にホバーすると通過率
+  - p.17 比較表の行をクリックするとその軸を強調
+- **画像** は `slides/images/` に ID名（`KV-01.png` など）で置くと入る。プロンプトは `docs/image-prompts.md`
+- 未確定：説明会の申込URL、稼働開始までの期間（該当箇所に［要確定］と表示）
 
 ## ダーク版テンプレート `dark-deck.html`
 

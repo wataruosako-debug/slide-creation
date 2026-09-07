@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>AIインサイトセールス｜サービス紹介</title>
+<style>
+/* ============================================================
+   AIインサイトセールス DL資料 / 1600 x 900 (16:9) / 白基調
+   ------------------------------------------------------------
+   ・右上「編集」で文字サイズ・太さ・字間・行間・色・揃え・位置を変更
+   ・「PDFにする」で16:9・余白なしのPDF（インタラクションは静止）
+   ・画像は slides/images/ に ID名で置くと自動で入る
+   ------------------------------------------------------------
+   シグネチャ：「当てる先」を照準の同心円で表す。章番号・強調・
+   グラフのマーカーに一貫して使う。
+   ============================================================ */
+
+:root{
+  /* ブランド */
+  --navy:    #123061;
+  --navy-2:  #2A4A7E;
+  --sky:     #D3E4F9;
+  --sky-2:   #EDF3FC;
+  --orange:  #E16D02;
+  --orange-2:#D6540F;
+  --yellow:  #FFD24A;
+
+  /* 文字と面 */
+  --ink:     #16203A;
+  --muted:   #5B6880;
+  --dim:     #8B95A8;
+  --line:    #D8E0EC;
+  --paper:   #FFFFFF;
+  --paper-2: #F6F9FD;
+
+  /* 版面 */
+  --pad-x: 84px;
+  --pad-t: 54px;
+  --pad-b: 44px;
+
+  /* 文字サイズ（ここを変えると全ページ効く） */
+  --fs-title: 46px;
+  --fs-body:  25px;
+  --fs-sub:   22px;
+  --fs-label: 18px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  background:#E7ECF3;
+  display:flex;flex-direction:column;align-items:center;gap:26px;
+  padding:86px 0 60px;
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic Medium","Yu Gothic",Meiryo,"Noto Sans CJK JP",sans-serif;
+  -webkit-font-smoothing:antialiased;color:var(--ink);
+}
+
+.slide{
+  position:relative;flex:0 0 auto;
+  width:1600px;height:900px;background:var(--paper);
+  font-size:var(--fs-body);line-height:1.7;
+  padding:var(--pad-t) var(--pad-x) var(--pad-b);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* --- 見出し --- */
+.eyebrow{display:flex;align-items:center;gap:14px;font-size:var(--fs-label);font-weight:700;letter-spacing:.14em;color:var(--orange)}
+.eyebrow::before{content:"";width:26px;height:3px;background:var(--orange);flex:0 0 auto}
+.hd{flex:0 0 auto;margin-bottom:30px}
+.hd h2{font-size:var(--fs-title);font-weight:700;line-height:1.34;letter-spacing:.01em;color:var(--navy);margin-top:14px}
+.hd .lede{font-size:var(--fs-sub);color:var(--muted);margin-top:12px;max-width:1200px}
+.bd{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.ft{flex:0 0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:40px;
+    margin-top:20px;padding-top:14px;border-top:1px solid var(--line);
+    font-size:var(--fs-label);color:var(--dim)}
+.ft .pg{font-weight:700;color:var(--navy)}
+
+/* 章番号：照準の同心円 */
+.aim{position:absolute;right:64px;top:44px;width:104px;height:104px;pointer-events:none}
+.aim i{position:absolute;border-radius:50%;border:1.5px solid var(--sky);inset:0}
+.aim i:nth-child(2){inset:16px}
+.aim i:nth-child(3){inset:32px;border-color:var(--orange)}
+.aim span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+          font-size:26px;font-weight:800;color:var(--navy)}
+
+/* --- 部品 --- */
+.h3{font-size:29px;font-weight:700;line-height:1.4;color:var(--navy)}
+.sub{font-size:var(--fs-sub);line-height:1.65;color:var(--muted)}
+.muted{color:var(--muted)} .dim{color:var(--dim)}
+.box{background:var(--paper-2);border:1px solid var(--line);border-radius:14px;padding:26px 28px}
+.box.sky{background:var(--sky-2);border-color:#C6DBF4}
+.box.hot{background:#FFF4E9;border-color:#F5CFA4}
+.box.navy{background:var(--navy);border-color:var(--navy);color:#fff}
+.big{font-size:104px;font-weight:800;line-height:1;letter-spacing:-.02em;color:var(--navy)}
+.big .u{font-size:28px;font-weight:700;margin-left:6px;letter-spacing:0}
+.hot{color:var(--orange)}
+.mk{background:linear-gradient(transparent 60%, var(--yellow) 60%, var(--yellow) 96%, transparent 96%)}
+.row{display:grid;align-items:center;gap:24px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.row.head{background:var(--navy);color:#fff;border:none;border-radius:10px 10px 0 0;
+          font-size:var(--fs-sub);font-weight:700;padding:14px 20px}
+.row.last{border-bottom:none}
+.chip{display:inline-block;background:var(--sky-2);border:1px solid #C6DBF4;color:var(--navy);
+      border-radius:999px;padding:7px 18px;font-size:var(--fs-sub);font-weight:700;margin-right:10px}
+
+/* 画像スロット：images/<ID>.png を置くと入る */
+.imgbox{position:relative;background:var(--paper-2);border:2px dashed #C3D2E6;border-radius:14px;overflow:hidden}
+.imgbox::after{content:attr(data-id) " · " attr(data-ratio);position:absolute;inset:0;
+               display:flex;align-items:center;justify-content:center;
+               font-size:20px;font-weight:700;color:#9FB2CC;letter-spacing:.08em}
+.imgbox img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;display:block}
+.r169{aspect-ratio:16/9} .r43{aspect-ratio:4/3} .r11{aspect-ratio:1/1}
+
+/* グラフ */
+.track{height:34px;background:#E8EEF6;border-radius:4px;position:relative;overflow:hidden}
+.track i{position:absolute;left:0;top:0;bottom:0;background:var(--navy-2);border-radius:4px;
+         transition:width .8s cubic-bezier(.22,1,.36,1)}
+.track i.hot{background:var(--orange)}
+.track i.zero{background:none;border:2px dashed #B9C7DA;box-shadow:none}
+
+/* 絞り込みの段（p.11） */
+.fstep{display:grid;grid-template-columns:300px 1fr 150px;align-items:center;gap:20px;
+       height:62px;padding:0 12px;border-radius:8px;cursor:pointer}
+.fstep .flab{font-size:24px;font-weight:700;color:var(--navy)}
+.fwrap{position:relative;height:34px;background:#EEF3FA;border-radius:6px;overflow:hidden}
+.fwrap i{position:absolute;left:0;top:0;bottom:0;background:var(--sky);border-radius:6px;transition:width .5s ease}
+.fwrap i.hot{background:var(--orange)}
+.fstep .fnum{text-align:right;font-size:23px;font-weight:800;color:var(--muted)}
+.fstep.on .fnum{color:var(--orange)}
+.fstep.sel{background:#FFF4E9}
+
+/* ファネル（p.14） */
+.fn{position:relative;height:66px;display:flex;align-items:center}
+.fnbar{position:absolute;left:0;top:0;bottom:0;background:var(--navy-2);border-radius:6px;transition:width .6s ease}
+.fnbar.hot{background:var(--orange)}
+.fn .fnlab{position:relative;z-index:1;font-size:24px;font-weight:700;color:#fff;padding-left:22px}
+.fn .fnnum{position:relative;z-index:1;margin-left:auto;font-size:30px;font-weight:800;color:var(--navy)}
+.fnrate{font-size:19px;color:var(--muted);padding-left:22px}
+.fnrate b{color:var(--orange);font-size:21px}
+
+/* --- 編集UI --- */
+#bar{position:fixed;top:0;left:0;right:0;height:56px;z-index:60;background:#0F1A2E;
+     border-bottom:1px solid #24344F;display:flex;align-items:center;gap:12px;padding:0 20px;
+     font:600 14px/1 -apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:#C9D6E8}
+#bar .sp{flex:1}
+#bar button{background:#1B2A44;color:#D9E4F2;border:1px solid #2C3F5D;border-radius:8px;padding:9px 16px;font:inherit;cursor:pointer}
+#bar button:hover{background:#25385A}
+#bar button.on{background:var(--orange);color:#fff;border-color:var(--orange)}
+#bar .hint{color:#7A8BA6;font-weight:400}
+#panel{position:fixed;right:18px;top:74px;width:268px;z-index:60;display:none;background:#fff;
+       border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 18px 50px rgba(18,48,97,.18);
+       font:400 13px/1.5 -apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:var(--ink);
+       max-height:calc(100vh - 100px);overflow:auto}
+#panel.show{display:block}
+#panel h4{font-size:12px;letter-spacing:.1em;color:var(--dim);margin:14px 0 7px;font-weight:700}
+#panel h4:first-of-type{margin-top:0}
+#panel .g{display:flex;gap:6px;flex-wrap:wrap}
+#panel .g button{flex:1;min-width:38px;background:#F2F6FB;color:var(--ink);border:1px solid var(--line);
+                 border-radius:7px;padding:8px 0;font:inherit;cursor:pointer}
+#panel .g button:hover{background:var(--sky-2)}
+#panel input[type=range]{width:100%}
+#panel .val{float:right;color:var(--dim);font-variant-numeric:tabular-nums}
+#panel .sw{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);cursor:pointer;flex:0 0 auto}
+#panel .path{font-size:11px;color:var(--dim);word-break:break-all;margin-bottom:10px}
+.ed-on .ed:hover{outline:1px dashed rgba(225,109,2,.55);outline-offset:3px;cursor:pointer}
+.ed-sel{outline:2px solid var(--orange) !important;outline-offset:3px}
+
+/* ツールチップ */
+#tip{position:fixed;z-index:70;background:var(--navy);color:#fff;padding:10px 14px;border-radius:8px;
+     font-size:15px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap;
+     box-shadow:0 8px 24px rgba(18,48,97,.3)}
+#tip.show{opacity:1}
+
+@media print{
+  @page{size:1600px 900px;margin:0}
+  body{background:#fff;padding:0;gap:0;display:block}
+  #bar,#panel,#tip{display:none !important}
+  .slide{break-after:page;page-break-after:always}
+  .ed-sel{outline:none !important}
+  .track i{transition:none}
+}
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <button id="btnEdit">編集</button>
+  <button id="btnUndo">元に戻す</button>
+  <button id="btnReset">初期化</button>
+  <span class="sp"></span>
+  <span class="hint">クリックで選択／ドラッグで移動／ダブルクリックで文字を直接編集／矢印キーで微調整</span>
+  <button id="btnExport">HTMLを書き出す</button>
+  <button id="btnPrint">PDFにする</button>
+</div>
+
+<div id="panel">
+  <div class="path" id="pPath"></div>
+  <h4>文字サイズ <span class="val" id="vFs"></span></h4>
+  <input type="range" id="rFs" min="12" max="160" step="1">
+  <div class="g" style="margin-top:6px">
+    <button data-fs="-4">−4</button><button data-fs="-1">−1</button>
+    <button data-fs="1">＋1</button><button data-fs="4">＋4</button>
+  </div>
+  <h4>太さ</h4>
+  <div class="g"><button data-fw="400">標準</button><button data-fw="600">中</button><button data-fw="700">太</button><button data-fw="800">極太</button></div>
+  <h4>字間 <span class="val" id="vLs"></span></h4>
+  <input type="range" id="rLs" min="-6" max="30" step="1">
+  <h4>行間 <span class="val" id="vLh"></span></h4>
+  <input type="range" id="rLh" min="100" max="260" step="5">
+  <h4>色</h4>
+  <div class="g" id="sw"></div>
+  <h4>揃え</h4>
+  <div class="g"><button data-ta="left">左</button><button data-ta="center">中央</button><button data-ta="right">右</button></div>
+  <h4>位置 <span class="val" id="vPos"></span></h4>
+  <div class="g">
+    <button data-mv="0,-8">↑</button><button data-mv="-8,0">←</button>
+    <button data-mv="8,0">→</button><button data-mv="0,8">↓</button>
+  </div>
+  <div class="g" style="margin-top:6px"><button id="bPos0">位置を戻す</button><button id="bHide">非表示</button></div>
+  <div class="g" style="margin-top:6px"><button id="bClear">書式を戻す</button></div>
+</div>
+<div id="tip"></div>
+
+<div id="deck">
+
+<!-- ============ 01 表紙 ============ -->
+<div class="slide" style="padding:0">
+  <div style="position:absolute;left:84px;top:150px;width:820px">
+    <p class="eyebrow" style="font-size:20px">AI INSIGHT SALES</p>
+    <h1 style="font-size:62px;font-weight:800;line-height:1.32;color:var(--navy);margin-top:26px">
+      営業を人に依存せず、<br><span class="mk">新規開拓を仕組み化する</span>。
+    </h1>
+    <p class="sub" style="font-size:26px;margin-top:26px;max-width:720px">
+      「誰に当てるか」をAIが設計し、リスト作成から架電まで当社が担います。
+    </p>
+    <p style="margin-top:34px">
+      <span class="chip">当てる先を決める</span><span class="chip">言うことを固める</span><span class="chip">実行まで代行する</span>
+    </p>
+  </div>
+  <div class="imgbox r43" data-id="KV-01" data-ratio="16:9"
+       style="position:absolute;right:72px;top:170px;width:600px;aspect-ratio:16/9;border-radius:18px">
+    <img src="images/KV-01.png" alt="">
+  </div>
+  <div style="position:absolute;left:84px;right:84px;bottom:52px;border-top:2px solid var(--navy);padding-top:24px;display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <p style="font-size:26px;font-weight:700;color:var(--navy)">株式会社ライトアップ</p>
+      <p class="sub" style="font-size:18px;margin-top:4px">東証グロース市場 6580</p>
+    </div>
+    <p class="dim" style="font-size:18px">2026年9月版</p>
+  </div>
+</div>
+
+<!-- ============ 02 この資料で分かること ============ -->
+<div class="slide">
+  <div class="hd">
+    <p class="eyebrow">SUMMARY</p>
+    <h2>この資料で分かること</h2>
+  </div>
+  <div class="bd">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:26px;flex:1 1 auto">
+      <div class="box" style="display:flex;flex-direction:column">
+        <p style="font-size:34px;font-weight:800;color:var(--orange);line-height:1">01</p>
+        <p class="h3" style="margin-top:14px">止まっている原因</p>
+        <p class="sub" style="margin-top:12px">新規開拓が進まない原因は、商材ではなく<b style="color:var(--navy)">当てる先</b>にあります。</p>
+      </div>
+      <div class="box" style="display:flex;flex-direction:column">
+        <p style="font-size:34px;font-weight:800;color:var(--orange);line-height:1">02</p>
+        <p class="h3" style="margin-top:14px">変えたときの結果</p>
+        <p class="sub" style="margin-top:12px">当てる先を変えるだけで反応がどう変わるかを、<b style="color:var(--navy)">実績値</b>でお見せします。</p>
+      </div>
+      <div class="box" style="display:flex;flex-direction:column">
+        <p style="font-size:34px;font-weight:800;color:var(--orange);line-height:1">03</p>
+        <p class="h3" style="margin-top:14px">役割の分かれ方</p>
+        <p class="sub" style="margin-top:12px">当社が<b style="color:var(--navy)">どこまで代行し</b>、貴社に何が残るのかをご説明します。</p>
+      </div>
+    </div>
+    <div class="box sky" style="margin-top:24px;padding:20px 28px">
+      <p style="font-size:23px"><b style="color:var(--navy)">価格・契約条件は本資料に記載しておりません。</b>　貴社の商材とターゲットによって稼働量が変わるため、オンライン説明会（無料・30分）にてご案内しています。</p>
+    </div>
+  </div>
+  <div class="ft"><span></span><span class="pg">02</span></div>
+</div>
+
+<!-- ============ 03 章扉① ============ -->
+<div class="slide" style="padding:0;background:var(--sky-2)">
+  <div style="position:absolute;left:84px;top:0;bottom:0;width:760px;display:flex;flex-direction:column;justify-content:center">
+    <p class="eyebrow">CHAPTER 01</p>
+    <p style="font-size:22px;font-weight:700;color:var(--muted);letter-spacing:.1em;margin-top:20px">なぜ新規開拓が止まるのか</p>
+    <h2 style="font-size:52px;font-weight:800;line-height:1.4;color:var(--navy);margin-top:20px">
+      売れないのは商品のせいではなく、<br><span class="mk">「誰に当てるか」を外している</span>だけです。
+    </h2>
+  </div>
+  <div class="imgbox" data-id="CH-01" data-ratio="16:9"
+       style="position:absolute;right:72px;top:180px;width:620px;aspect-ratio:16/9;border-radius:18px;background:#fff">
+    <img src="images/CH-01.png" alt="">
+  </div>
+  <div style="position:absolute;left:84px;bottom:44px;font-size:18px;color:var(--dim)">03</div>
+</div>
+
+<!-- ============ 04 止まる3つの型 ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>01</span></div>
+  <div class="hd">
+    <p class="eyebrow">01 ISSUE</p>
+    <h2>新規開拓が止まる原因は、だいたいこの3つに分かれます</h2>
+  </div>
+  <div class="bd">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px;flex:1 1 auto">
+      <div style="display:flex;flex-direction:column">
+        <div class="imgbox r11" data-id="P-01" data-ratio="1:1" style="width:84%;margin:0 auto"><img src="images/P-01.png" alt=""></div>
+        <p class="h3" style="margin-top:20px">採用しても続かない</p>
+        <p class="sub" style="margin-top:10px">採れない、育たない、辞める。立ち上がりを待つあいだ、固定費だけが先に増えていきます。</p>
+      </div>
+      <div style="display:flex;flex-direction:column">
+        <div class="imgbox r11" data-id="P-02" data-ratio="1:1" style="width:84%;margin:0 auto"><img src="images/P-02.png" alt=""></div>
+        <p class="h3" style="margin-top:20px">紹介と既存に依存している</p>
+        <p class="sub" style="margin-top:10px">新しい入口が増えないため、取引先の状況にそのまま業績が振られます。</p>
+      </div>
+      <div style="display:flex;flex-direction:column">
+        <div class="imgbox r11" data-id="P-03" data-ratio="1:1" style="width:84%;margin:0 auto"><img src="images/P-03.png" alt=""></div>
+        <p class="h3" style="margin-top:20px">当てる先を外している</p>
+        <p class="sub" style="margin-top:10px">試して終わる。何が悪くて反応が出なかったのかが、社内に残りません。</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>当社にご相談いただいた企業さまの傾向をまとめたものです</span><span class="pg">04</span></div>
+</div>
+
+<!-- ============ 05 一般水準 ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>01</span></div>
+  <div class="hd">
+    <p class="eyebrow">01 ISSUE</p>
+    <h2>量を増やしても、当てる先が同じなら結果は変わりません</h2>
+  </div>
+  <div class="bd" style="flex-direction:row;align-items:center;gap:80px">
+    <div style="flex:0 0 auto">
+      <p class="dim" style="font-size:21px;font-weight:700;letter-spacing:.1em">一般的なテレアポ</p>
+      <p style="display:flex;align-items:baseline;gap:18px;margin-top:14px">
+        <span class="big" style="font-size:130px">100<span class="u">件</span></span>
+        <span style="font-size:44px;color:var(--dim)">→</span>
+        <span class="big" style="font-size:130px;color:var(--orange)">1<span class="u">件</span></span>
+      </p>
+      <p class="sub" style="margin-top:16px">架電100件に対して、アポイントは1件前後。</p>
+    </div>
+    <div style="flex:1 1 0;border-left:1px solid var(--line);padding-left:64px">
+      <p class="h3">増やすべきは、件数ではありません</p>
+      <p class="sub" style="margin-top:16px;font-size:24px;line-height:1.85">
+        1%を2%にするために件数を倍にすると、人も時間も倍かかります。<br>
+        当社が最初に見直すのは架電数ではなく、<b style="color:var(--navy)">「誰に、何を言って架けているか」</b>です。
+      </p>
+      <div class="box hot" style="margin-top:28px">
+        <p style="font-size:23px;color:var(--orange-2);font-weight:700">次のページで、商材を変えずに当てる先だけを変えた2社の結果をお見せします。</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>アポ率の水準は、当社にご相談いただく企業さまから伺う数値をもとにしています</span><span class="pg">05</span></div>
+</div>
+
+<!-- ============ 06 グラフ1 前後比較 ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>01</span></div>
+  <div class="hd">
+    <p class="eyebrow">01 ISSUE</p>
+    <h2>商材を変えなくても、<span class="mk">当てる先を変えるだけ</span>で反応は変わります</h2>
+    <p class="lede">いずれも同じ商材・同じ支援先での前後比較です。棒にカーソルを合わせると内訳が出ます。</p>
+  </div>
+  <div class="bd" style="justify-content:center;gap:44px">
+    <div>
+      <p class="h3" style="font-size:26px">A社｜動画制作・運用</p>
+      <div style="display:grid;grid-template-columns:230px 1fr 200px;align-items:center;gap:22px;margin-top:16px">
+        <div><p class="sub" style="font-size:19px;font-weight:700;color:var(--dim)">変更前</p><p class="sub" style="font-size:18px">1,706コール</p></div>
+        <span class="track" data-tip="1,706コール中 6件／アポ率 0.35%"><i style="width:16%"></i></span>
+        <p style="font-size:32px;font-weight:800;color:var(--muted)">0.35<span style="font-size:20px">%</span></p>
+      </div>
+      <div style="display:grid;grid-template-columns:230px 1fr 200px;align- items:center;align-items:center;gap:22px;margin-top:12px">
+        <div><p class="sub" style="font-size:19px;font-weight:700;color:var(--navy)">変更後</p><p class="sub" style="font-size:18px">1,226コール</p></div>
+        <span class="track" data-tip="1,226コール中 27件／アポ率 2.20%"><i class="hot" style="width:100%"></i></span>
+        <p style="font-size:32px;font-weight:800;color:var(--orange)">2.20<span style="font-size:20px">%</span></p>
+      </div>
+    </div>
+    <div>
+      <p class="h3" style="font-size:26px">B社｜研修・コンサルティング</p>
+      <div style="display:grid;grid-template-columns:230px 1fr 200px;align-items:center;gap:22px;margin-top:16px">
+        <div><p class="sub" style="font-size:19px;font-weight:700;color:var(--dim)">変更前</p><p class="sub" style="font-size:18px">300コール</p></div>
+        <span class="track" data-tip="300コール中 0件／アポ率 0.00%"><i class="zero" style="width:100%"></i></span>
+        <p style="font-size:32px;font-weight:800;color:var(--muted)">0.00<span style="font-size:20px">%</span></p>
+      </div>
+      <div style="display:grid;grid-template-columns:230px 1fr 200px;align-items:center;gap:22px;margin-top:12px">
+        <div><p class="sub" style="font-size:19px;font-weight:700;color:var(--navy)">変更後</p><p class="sub" style="font-size:18px">390コール</p></div>
+        <span class="track" data-tip="390コール中 4件／アポ率 1.03%"><i class="hot" style="width:47%"></i></span>
+        <p style="font-size:32px;font-weight:800;color:var(--orange)">1.03<span style="font-size:20px">%</span></p>
+      </div>
+    </div>
+    <div class="box hot" style="padding:18px 26px">
+      <p style="font-size:24px;color:var(--orange-2);font-weight:700">A社はアポ率が6.3倍に、B社はゼロだった反応が生まれました。増やしたのはコール数ではなく、当てる先の精度です。</p>
+    </div>
+  </div>
+  <div class="ft"><span>出典：当社支援実績（2025年）。棒の長さは各社のアポ率を、そのグループ内の最大値を全幅として表しています</span><span class="pg">06</span></div>
+</div>
+
+<!-- ============ 07 勝ち筋は相手側にある ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>01</span></div>
+  <div class="hd">
+    <p class="eyebrow">01 ISSUE</p>
+    <h2>勝ち筋は商材の中ではなく、<span class="mk">相手の事情の側</span>にあります</h2>
+  </div>
+  <div class="bd" style="flex-direction:row;gap:56px;align-items:center">
+    <div class="imgbox r43" data-id="D-01" data-ratio="4:3" style="flex:0 0 480px"><img src="images/D-01.png" alt=""></div>
+    <div style="flex:1 1 0">
+      <p class="sub" style="font-size:25px;line-height:1.8">同じ商材でも、買う理由は相手によって違います。刺さらないときに変えるべきは商品の説明ではなく、<b style="color:var(--navy)">誰の、どの困りごとに当てるか</b>です。</p>
+      <div style="margin-top:28px;display:flex;flex-direction:column;gap:16px">
+        <div class="box" style="display:grid;grid-template-columns:210px 1fr;gap:24px;align-items:center;padding:18px 24px">
+          <p class="sub" style="font-weight:700;color:var(--dim)">製造業（金属加工）</p>
+          <p style="font-size:23px">元請けを狙う → <b class="hot">同業他社の協力会社として</b>提案する</p>
+        </div>
+        <div class="box" style="display:grid;grid-template-columns:210px 1fr;gap:24px;align-items:center;padding:18px 24px">
+          <p class="sub" style="font-weight:700;color:var(--dim)">研修・コンサル</p>
+          <p style="font-size:23px">一般企業を狙う → <b class="hot">法定研修が義務の介護施設へ</b>切り替える</p>
+        </div>
+        <div class="box" style="display:grid;grid-template-columns:210px 1fr;gap:24px;align-items:center;padding:18px 24px">
+          <p class="sub" style="font-weight:700;color:var(--dim)">SEO・Web支援</p>
+          <p style="font-size:23px">SEOを訴求 → <b class="hot">AI検索最適化（LLMO）へ</b>訴求を刷新する</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>いずれも当社の支援先での実例です</span><span class="pg">07</span></div>
+</div>
+
+<!-- ============ 08 章扉② ============ -->
+<div class="slide" style="padding:0;background:var(--sky-2)">
+  <div style="position:absolute;left:84px;top:0;bottom:0;width:760px;display:flex;flex-direction:column;justify-content:center">
+    <p class="eyebrow">CHAPTER 02</p>
+    <p style="font-size:22px;font-weight:700;color:var(--muted);letter-spacing:.1em;margin-top:20px">AIインサイトセールスとは</p>
+    <h2 style="font-size:52px;font-weight:800;line-height:1.4;color:var(--navy);margin-top:20px">
+      当てる先を決め、言うことを固め、<br><span class="mk">実行まで当社が担います</span>。
+    </h2>
+  </div>
+  <div class="imgbox" data-id="CH-02" data-ratio="16:9"
+       style="position:absolute;right:72px;top:180px;width:620px;aspect-ratio:16/9;border-radius:18px;background:#fff">
+    <img src="images/CH-02.png" alt="">
+  </div>
+  <div style="position:absolute;left:84px;bottom:44px;font-size:18px;color:var(--dim)">08</div>
+</div>
+
+<!-- ============ 09 サービス定義 ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>02</span></div>
+  <div class="hd">
+    <p class="eyebrow">02 SERVICE</p>
+    <h2>3つの工程をまとめて引き受け、毎月まわし続けます</h2>
+  </div>
+  <div class="bd">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+      <div class="box" style="border-top:5px solid var(--navy)">
+        <p class="eyebrow" style="font-size:17px">STEP 01</p>
+        <p class="h3" style="margin-top:12px">決める</p>
+        <p class="sub" style="margin-top:10px;line-height:1.75">ターゲット・訴求・ゴールを戦略ミーティングで確定します。</p>
+      </div>
+      <div class="box" style="border-top:5px solid var(--navy)">
+        <p class="eyebrow" style="font-size:17px">STEP 02</p>
+        <p class="h3" style="margin-top:12px">つくる</p>
+        <p class="sub" style="margin-top:10px;line-height:1.75">法人データベースからリストを抽出し、トークスクリプトを作成します。</p>
+      </div>
+      <div class="box" style="border-top:5px solid var(--orange)">
+        <p class="eyebrow" style="font-size:17px">STEP 03</p>
+        <p class="h3" style="margin-top:12px">実行する</p>
+        <p class="sub" style="margin-top:10px;line-height:1.75">テレアポ・フォームDM・共催セミナーを実行し、週次で修正します。</p>
+      </div>
+    </div>
+    <div style="margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:26px">
+      <div class="box sky">
+        <p class="eyebrow" style="font-size:17px;color:var(--navy)">貴社にお願いすること</p>
+        <p style="font-size:24px;margin-top:12px;line-height:1.75">ヒアリングへのご回答／獲得したアポの商談対応／定例ミーティングへのご参加</p>
+      </div>
+      <div class="box navy">
+        <p style="font-size:17px;font-weight:700;letter-spacing:.14em;color:var(--yellow)">当社が担うこと</p>
+        <p style="font-size:24px;margin-top:12px;line-height:1.75">ターゲット設計／リスト抽出／スクリプト作成／架電・フォーム送信の実行／結果分析と改善／セミナーの企画と集客</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span></span><span class="pg">09</span></div>
+</div>
+
+<!-- ============ 10 5万件 ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>02</span></div>
+  <div class="hd">
+    <p class="eyebrow">02 SERVICE</p>
+    <h2>AIの判断材料は、理論ではなく<span class="mk">毎月積み上がる実データ</span>です</h2>
+  </div>
+  <div class="bd" style="flex-direction:row;align-items:center;gap:76px">
+    <div style="flex:0 0 auto">
+      <p class="big" style="font-size:150px">50,000<span class="u">件以上／月</span></p>
+      <p class="h3" style="margin-top:18px">当社が実行する新規架電のコールログ</p>
+    </div>
+    <div style="flex:1 1 0;border-left:1px solid var(--line);padding-left:64px">
+      <p class="sub" style="font-size:24px;line-height:1.85">
+        断られた理由と、アポが取れた条件が業種ごとに蓄積されます。この記録を毎月学習させ、翌月のリストとトークスクリプトに反映します。
+      </p>
+      <div class="box sky" style="margin-top:26px">
+        <p style="font-size:23px;line-height:1.75"><b style="color:var(--navy)">60種類以上の商材</b>を実際に販売してきた経験も、訴求の設計に使っています。「この業種にはこの言い方が通る」を、机上ではなく現場の記録から選びます。</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>コールログは当社が実行する新規架電の記録です</span><span class="pg">10</span></div>
+</div>
+
+<!-- ============ 11 500万件から絞る ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>02</span></div>
+  <div class="hd">
+    <p class="eyebrow">02 SERVICE</p>
+    <h2>リストは買うのではなく、<span class="mk">条件で作ります</span></h2>
+    <p class="lede">各段をクリックすると、その条件で何を絞るのかが開きます。</p>
+  </div>
+  <div class="bd" style="flex-direction:row;gap:56px">
+    <div style="flex:1.25 1 0;display:flex;flex-direction:column;justify-content:center;gap:10px" id="funnelList">
+      <div class="fstep" data-d="国内の法人データベース。ここを母数として、条件を重ねて絞り込みます。">
+        <span class="flab">法人データベース</span>
+        <span class="fwrap"><i class="" style="width:100%"></i></span>
+        <span class="fnum">500万件</span>
+      </div>
+      <div class="fstep" data-d="貴社の商材が刺さる業種に絞ります。業種は1つとは限りません。">
+        <span class="flab">業種で絞る</span>
+        <span class="fwrap"><i class="" style="width:78%"></i></span>
+        <span class="fnum">─</span>
+      </div>
+      <div class="fstep" data-d="訪問・納品の範囲や、商圏の事情に合わせて地域を指定します。">
+        <span class="flab">地域で絞る</span>
+        <span class="fwrap"><i class="" style="width:58%"></i></span>
+        <span class="fnum">─</span>
+      </div>
+      <div class="fstep" data-d="従業員数・売上規模で、決裁の速さと予算感を揃えます。">
+        <span class="flab">規模で絞る</span>
+        <span class="fwrap"><i class="" style="width:40%"></i></span>
+        <span class="fnum">─</span>
+      </div>
+      <div class="fstep on" data-d="設立年数、採用状況、既存の取引構造など、困りごとが出やすい条件を重ねます。">
+        <span class="flab">課題シグナルで絞る</span>
+        <span class="fwrap"><i class="hot" style="width:26%"></i></span>
+        <span class="fnum">架電リスト</span>
+      </div>
+    </div>
+    <div style="flex:1 1 0;display:flex;flex-direction:column;justify-content:center;gap:22px">
+      <div class="imgbox r43" data-id="D-02" data-ratio="4:3"><img src="images/D-02.png" alt=""></div>
+      <div class="box hot" id="fDesc">
+        <p style="font-size:23px;line-height:1.7">設立年数、採用状況、既存の取引構造など、困りごとが出やすい条件を重ねます。</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>当社が保有する法人データベースを使用します。名刺・展示会で獲得したリストの活用も可能です</span><span class="pg">11</span></div>
+</div>
+
+<!-- ============ 12 3チャネル ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>02</span></div>
+  <div class="hd">
+    <p class="eyebrow">02 SERVICE</p>
+    <h2>性質の違う3つのチャネルを、<span class="mk">決まった量で毎月</span>回します</h2>
+  </div>
+  <div class="bd">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:26px;flex:1 1 auto">
+      <div class="box" style="display:flex;flex-direction:column;border-top:5px solid var(--navy)">
+        <p class="eyebrow" style="font-size:17px">CHANNEL 01</p>
+        <p class="h3" style="margin-top:10px">テレアポ</p>
+        <p class="big" style="font-size:64px;margin-top:16px">500<span class="u">件／月</span></p>
+        <p class="sub" style="margin-top:auto;padding-top:18px;line-height:1.7">社内で教育を受けた<b style="color:var(--navy)">自社のコールスタッフのみ</b>が架電します。外部委託はしません。</p>
+      </div>
+      <div class="box" style="display:flex;flex-direction:column;border-top:5px solid var(--navy)">
+        <p class="eyebrow" style="font-size:17px">CHANNEL 02</p>
+        <p class="h3" style="margin-top:10px">フォームDM</p>
+        <p class="big" style="font-size:64px;margin-top:16px">1,000<span class="u">件／月</span></p>
+        <p class="sub" style="margin-top:auto;padding-top:18px;line-height:1.7">電話が繋がらない相手にも、問い合わせフォームから直接届けます。</p>
+      </div>
+      <div class="box" style="display:flex;flex-direction:column;border-top:5px solid var(--orange)">
+        <p class="eyebrow" style="font-size:17px">CHANNEL 03</p>
+        <p class="h3" style="margin-top:10px">共催セミナー</p>
+        <p class="big" style="font-size:64px;margin-top:16px">年4<span class="u">回・計40社</span></p>
+        <p class="sub" style="margin-top:auto;padding-top:18px;line-height:1.7">当社のハウスリストから集客します。1回あたり10社が目安です。</p>
+      </div>
+    </div>
+    <div class="box sky" style="margin-top:24px;padding:18px 28px">
+      <p style="font-size:23px">1つのチャネルに賭けず、<b style="color:var(--navy)">断られ方の違う3本</b>を並行して回します。反応の出方を見て、翌月の配分と訴求を組み替えます。</p>
+    </div>
+  </div>
+  <div class="ft"><span>スタンダードプランの標準実行量です</span><span class="pg">12</span></div>
+</div>
+
+<!-- ============ 13 共催セミナー ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>02</span></div>
+  <div class="hd">
+    <p class="eyebrow">02 SERVICE</p>
+    <h2><span class="mk">10万社のつながり</span>から、貴社のセミナーに集めます</h2>
+  </div>
+  <div class="bd" style="flex-direction:row;gap:56px;align-items:center">
+    <div style="flex:1 1 0">
+      <div style="display:flex;gap:56px">
+        <div><p class="big" style="font-size:82px">10<span class="u">万社</span></p><p class="sub" style="margin-top:8px">当社とつながりのある企業（ハウスリスト）</p></div>
+        <div><p class="big" style="font-size:82px">1,000<span class="u">回／年</span></p><p class="sub" style="margin-top:8px">セミナーの開催実績。うち約半数が共催</p></div>
+      </div>
+      <p class="sub" style="font-size:24px;line-height:1.85;margin-top:30px">
+        集客は当社が担当します。貴社には当日の登壇と、参加された企業さまへの対応をお願いします。テレアポやフォームでは届かない層に、<b style="color:var(--navy)">話を聞く姿勢のある状態</b>で会えるのが利点です。
+      </p>
+    </div>
+    <div class="imgbox r11" data-id="P-04" data-ratio="1:1" style="flex:0 0 360px"><img src="images/P-04.png" alt=""></div>
+  </div>
+  <div class="ft"><span>開催回数・集客数はプランにより異なります</span><span class="pg">13</span></div>
+</div>
+
+<!-- ============ 14 ファネル ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>02</span></div>
+  <div class="hd">
+    <p class="eyebrow">02 SERVICE</p>
+    <h2>アポは通過点です。見るべきは<span class="mk">各段階の通過率</span>です</h2>
+    <p class="lede">広告業の支援先での実績。各段にカーソルを合わせると通過率が出ます。</p>
+  </div>
+  <div class="bd" style="flex-direction:row;gap:60px;align-items:center">
+    <div style="flex:1.3 1 0;display:flex;flex-direction:column;gap:14px">
+      <div class="fn" data-tip="架電 535件">
+        <span class="fnbar" style="width:82%"></span>
+        <span class="fnlab">架電</span><span class="fnnum">535</span>
+      </div>
+      <p class="fnrate">↓　通電率 <b>7.7%</b>　── 担当者まで繋がるかが最初の壁</p>
+      <div class="fn" data-tip="ターゲット着電 41件（535件の7.7%）">
+        <span class="fnbar" style="width:43%"></span>
+        <span class="fnlab">ターゲット着電</span><span class="fnnum">41</span>
+      </div>
+      <p class="fnrate">↓　アポ化率 <b>9.8%</b>　── 繋がった後は、言うことの精度で決まる</p>
+      <div class="fn" data-tip="アポ 4件（着電41件の9.8%）">
+        <span class="fnbar" style="width:26%"></span>
+        <span class="fnlab">アポイント</span><span class="fnnum">4</span>
+      </div>
+      <p class="fnrate">↓　受注率 <b>25.0%</b></p>
+      <div class="fn on" data-tip="受注 1件（アポ4件の25.0%）">
+        <span class="fnbar hot" style="width:15%"></span>
+        <span class="fnlab">受注</span><span class="fnnum">1</span>
+      </div>
+    </div>
+    <div style="flex:1 1 0">
+      <div class="box hot">
+        <p class="eyebrow" style="font-size:17px">この数字の読み方</p>
+        <p style="font-size:24px;line-height:1.8;margin-top:12px">535件かけて担当者まで繋がるのは<b class="hot">41件</b>。落ちているのは大半がここです。<br><br>繋がった後のアポ化と受注は歩留まりが高いため、改善すべきは<b style="color:var(--navy)">架電数ではなく、繋がる相手の選び方</b>だと分かります。</p>
+      </div>
+      <p class="sub" style="margin-top:22px;line-height:1.7">当社は毎週この4段を確認し、どこで落ちているかに応じてリストか、トークかを切り分けて直します。</p>
+    </div>
+  </div>
+  <div class="ft"><span>出典：当社支援実績（広告業／2025年）。同一期間の実測値です</span><span class="pg">14</span></div>
+</div>
+
+<!-- ============ 15 事例① ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>03</span></div>
+  <div class="hd">
+    <p class="eyebrow">03 CASE 01</p>
+    <h2>元請けではなく<span class="mk">同業の協力会社</span>へ振り向けた結果、7件の受注に繋がりました</h2>
+  </div>
+  <div class="bd" style="flex-direction:row;gap:48px">
+    <div style="flex:1.15 1 0;display:flex;flex-direction:column;gap:14px">
+      <div class="box" style="border-left:5px solid var(--line)">
+        <p class="eyebrow" style="font-size:17px;color:var(--dim)">BEFORE　課題</p>
+        <p style="font-size:24px;margin-top:8px;line-height:1.7">紹介頼みで新規の接点がない。現場が忙しく、営業に手が回らない。</p>
+      </div>
+      <div class="box hot" style="border-left:5px solid var(--orange)">
+        <p class="eyebrow" style="font-size:17px">CHANGE　変えたこと</p>
+        <p style="font-size:24px;margin-top:8px;line-height:1.7">元請け企業ではなく、<b style="color:var(--navy)">同業他社の協力会社（下請け）</b>として使ってもらう訴求に転換。</p>
+      </div>
+      <div class="box sky" style="margin-top:auto;padding:18px 24px">
+        <p class="sub" style="font-size:21px;line-height:1.7">「暗いトンネルの先に光が見えた」<br>「AIを使っていたと知らず、営業担当のテクニックだと思っていた」</p>
+        <p class="dim" style="font-size:18px;margin-top:10px">── 支援先の代表さま</p>
+      </div>
+    </div>
+    <div style="flex:1 1 0;display:flex;flex-direction:column;justify-content:center;gap:20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="box" style="text-align:center"><p class="big" style="font-size:56px">3,000<span class="u">コール</span></p><p class="sub" style="margin-top:6px">実行量</p></div>
+        <div class="box" style="text-align:center"><p class="big" style="font-size:56px">60<span class="u">アポ</span></p><p class="sub" style="margin-top:6px">アポ率 2.0%</p></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="box" style="text-align:center"><p class="big" style="font-size:56px">96<span class="u">アポ</span></p><p class="sub" style="margin-top:6px">累計</p></div>
+        <div class="box navy" style="text-align:center"><p class="big" style="font-size:56px;color:var(--yellow)">7<span class="u">件</span></p><p style="font-size:21px;margin-top:6px;color:#C9DCF5">新規受注</p></div>
+      </div>
+      <p class="sub" style="font-size:19px;line-height:1.6">※ 60アポは3,000コール時点の数値、96アポは複数月の累計です。</p>
+    </div>
+  </div>
+  <div class="ft"><span>製造業（アルミ二次加工）／岡山県　出典：当社支援実績（2025年）</span><span class="pg">15</span></div>
+</div>
+
+<!-- ============ 16 事例②③④ ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>03</span></div>
+  <div class="hd">
+    <p class="eyebrow">03 CASE 02-04</p>
+    <h2>いずれも商材はそのままで、<span class="mk">当てる先と言い方だけ</span>を変えています</h2>
+  </div>
+  <div class="bd">
+    <div class="row head" style="grid-template-columns:230px 1fr 1fr 250px">
+      <span>業種</span><span>詰まっていたこと</span><span>変えたこと</span><span style="text-align:right">結果</span>
+    </div>
+    <div class="row" style="grid-template-columns:230px 1fr 1fr 250px;flex:1 1 auto">
+      <span style="font-weight:700;color:var(--navy);font-size:24px">研修・コンサル</span>
+      <span class="sub">「YouTubeで十分」と言われ、300コールで0アポ</span>
+      <span class="sub">法定研修が義務の<b style="color:var(--navy)">介護施設</b>へ変更。受講管理の事務負担削減を訴求</span>
+      <span style="text-align:right"><b style="font-size:34px;font-weight:800;color:var(--orange)">4</b><span style="font-size:21px;font-weight:700"> アポ</span><br><span class="sub" style="font-size:18px">390コール／運用初月</span></span>
+    </div>
+    <div class="row" style="grid-template-columns:230px 1fr 1fr 250px;flex:1 1 auto">
+      <span style="font-weight:700;color:var(--navy);font-size:24px">IT受託開発</span>
+      <span class="sub">比較サイト依存から撤退。営業のノウハウがない</span>
+      <span class="sub">開発会社への<b style="color:var(--navy)">下請け協業</b>提案に切り替え、切り返しトークを事前設計</span>
+      <span style="text-align:right"><b style="font-size:34px;font-weight:800;color:var(--orange)">19</b><span style="font-size:21px;font-weight:700"> アポ</span><br><span class="sub" style="font-size:18px">617コール／アポ率 3.1%</span></span>
+    </div>
+    <div class="row last" style="grid-template-columns:230px 1fr 1fr 250px;flex:1 1 auto">
+      <span style="font-weight:700;color:var(--navy);font-size:24px">SEO支援・Webマーケ</span>
+      <span class="sub">SEO訴求では商談が前に進まない</span>
+      <span class="sub"><b style="color:var(--navy)">LLMO（AI検索最適化）</b>へ訴求を刷新し、BtoB領域へリストを入れ替え</span>
+      <span style="text-align:right"><b style="font-size:34px;font-weight:800;color:var(--orange)">8</b><span style="font-size:21px;font-weight:700"> アポ</span><br><span class="sub" style="font-size:18px">3ヶ月</span></span>
+    </div>
+    <div class="box sky" style="margin-top:20px;padding:16px 26px">
+      <p style="font-size:23px">「SEOのまま続けていたら成果にならなかった」── SEO支援の支援先さま</p>
+    </div>
+  </div>
+  <div class="ft"><span>出典：当社支援実績。社名は非掲載とし、業種のみ記載しています</span><span class="pg">16</span></div>
+</div>
+
+<!-- ============ 17 比較 ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>04</span></div>
+  <div class="hd">
+    <p class="eyebrow">04 COMPARE</p>
+    <h2>採用や営業代行と、<span class="mk">何が違うのか</span></h2>
+    <p class="lede">行をクリックすると、その軸だけが強調されます。</p>
+  </div>
+  <div class="bd" id="cmp">
+    <div class="row head" style="grid-template-columns:270px 1fr 210px 230px 230px;gap:18px;font-size:20px">
+      <span>比較軸</span><span style="color:var(--yellow)">AIインサイトセールス</span><span>営業を採用する</span><span>営業代行（固定費）</span><span>営業代行（成果報酬）</span>
+    </div>
+    <div class="row cr" style="grid-template-columns:270px 1fr 210px 230px 230px;gap:18px;flex:1 1 auto">
+      <span style="font-weight:700;color:var(--navy)">立ち上がりまで</span>
+      <span style="font-weight:700;color:var(--orange)">数週間</span>
+      <span class="sub">3〜6ヶ月</span><span class="sub">数週間</span><span class="sub">数週間</span>
+    </div>
+    <div class="row cr" style="grid-template-columns:270px 1fr 210px 230px 230px;gap:18px;flex:1 1 auto">
+      <span style="font-weight:700;color:var(--navy)">誰に当てるかの設計</span>
+      <span style="font-weight:700;color:var(--orange)">法人データベースから条件抽出。毎月見直す</span>
+      <span class="sub">自社で試行錯誤</span><span class="sub">依頼側が指定</span><span class="sub">代行側が取りやすい先に寄る</span>
+    </div>
+    <div class="row cr" style="grid-template-columns:270px 1fr 210px 230px 230px;gap:18px;flex:1 1 auto">
+      <span style="font-weight:700;color:var(--navy)">架電する人</span>
+      <span style="font-weight:700;color:var(--orange)">社内教育を受けた自社のコールスタッフのみ</span>
+      <span class="sub">自社社員</span><span class="sub">アルバイト・在宅の場合が多い</span><span class="sub">同左</span>
+    </div>
+    <div class="row cr" style="grid-template-columns:270px 1fr 210px 230px 230px;gap:18px;flex:1 1 auto">
+      <span style="font-weight:700;color:var(--navy)">ノウハウの蓄積</span>
+      <span style="font-weight:700;color:var(--orange)">1年後に貴社の資産として残る</span>
+      <span class="sub">属人化し、退職で消える</span><span class="sub">残らない</span><span class="sub">残らない</span>
+    </div>
+    <div class="row cr last" style="grid-template-columns:270px 1fr 210px 230px 230px;gap:18px;flex:1 1 auto">
+      <span style="font-weight:700;color:var(--navy)">チャネル</span>
+      <span style="font-weight:700;color:var(--orange)">電話・フォーム・セミナーの3本</span>
+      <span class="sub">属人</span><span class="sub">電話中心</span><span class="sub">電話中心</span>
+    </div>
+  </div>
+  <div class="ft"><span>営業代行の記載は、一般的なサービス内容をもとにした比較です</span><span class="pg">17</span></div>
+</div>
+
+<!-- ============ 18 進め方 ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>04</span></div>
+  <div class="hd">
+    <p class="eyebrow">04 PROCESS</p>
+    <h2>お申し込みから稼働までの流れ</h2>
+  </div>
+  <div class="bd">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;flex:1 1 auto">
+      <div class="box" style="display:flex;flex-direction:column;border-top:5px solid var(--navy)">
+        <p class="eyebrow" style="font-size:16px">STEP 01</p><p class="h3" style="font-size:25px;margin-top:8px">お申し込み</p>
+        <p class="sub" style="margin-top:10px;font-size:20px;line-height:1.65">説明会でご納得いただいたうえで、契約手続きに進みます。</p></div>
+      <div class="box" style="display:flex;flex-direction:column;border-top:5px solid var(--navy)">
+        <p class="eyebrow" style="font-size:16px">STEP 02</p><p class="h3" style="font-size:25px;margin-top:8px">戦略ミーティング</p>
+        <p class="sub" style="margin-top:10px;font-size:20px;line-height:1.65">ターゲット・訴求・ゴールを決めます。</p></div>
+      <div class="box" style="display:flex;flex-direction:column;border-top:5px solid var(--navy)">
+        <p class="eyebrow" style="font-size:16px">STEP 03</p><p class="h3" style="font-size:25px;margin-top:8px">準備</p>
+        <p class="sub" style="margin-top:10px;font-size:20px;line-height:1.65">リストを抽出し、トークスクリプトを作成します。</p></div>
+      <div class="box" style="display:flex;flex-direction:column;border-top:5px solid var(--orange)">
+        <p class="eyebrow" style="font-size:16px">STEP 04</p><p class="h3" style="font-size:25px;margin-top:8px">実行</p>
+        <p class="sub" style="margin-top:10px;font-size:20px;line-height:1.65">テレアポ・フォームDM・共催セミナーを開始します。</p></div>
+      <div class="box" style="display:flex;flex-direction:column;border-top:5px solid var(--orange)">
+        <p class="eyebrow" style="font-size:16px">STEP 05</p><p class="h3" style="font-size:25px;margin-top:8px">週次で修正</p>
+        <p class="sub" style="margin-top:10px;font-size:20px;line-height:1.65">結果を確認し、当てる先と訴求を直します。</p></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:24px">
+      <div class="box sky">
+        <p class="eyebrow" style="font-size:17px;color:var(--navy)">稼働開始まで</p>
+        <p style="font-size:24px;margin-top:10px"><b style="color:var(--navy)">お申し込みから数週間</b>で架電が始まります。<span class="dim" style="font-size:19px">［期間は要確定］</span></p>
+      </div>
+      <div class="box" style="border-left:5px solid var(--orange-2)">
+        <p class="eyebrow" style="font-size:17px">対応できないこと</p>
+        <p style="font-size:23px;margin-top:10px;line-height:1.7">自社の商材・サービスをお持ちでない方（当社商材の代理販売のみをご希望の方）は、お受けしておりません。</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>期間は目安です。商材とターゲットの複雑さにより前後します</span><span class="pg">18</span></div>
+</div>
+
+<!-- ============ 19 FAQ ============ -->
+<div class="slide">
+  <div class="aim"><i></i><i></i><i></i><span>04</span></div>
+  <div class="hd">
+    <p class="eyebrow">04 FAQ</p>
+    <h2>よくあるご質問</h2>
+  </div>
+  <div class="bd">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px 44px;flex:1 1 auto;align-content:center">
+      <div>
+        <p class="h3" style="font-size:25px"><span class="hot" style="font-weight:800;margin-right:10px">Q.</span>特殊な商材でも対応できますか</p>
+        <p class="sub" style="margin-top:10px;line-height:1.7">60種類以上の商材を実際に販売してきた売り方のノウハウを転用します。業種ごとの断られ方も蓄積されています。</p>
+      </div>
+      <div>
+        <p class="h3" style="font-size:25px"><span class="hot" style="font-weight:800;margin-right:10px">Q.</span>リストは自分で用意するのですか</p>
+        <p class="sub" style="margin-top:10px;line-height:1.7">不要です。当社が法人データベースから条件を絞って作成します。名刺や展示会で得たリストの活用も可能です。</p>
+      </div>
+      <div>
+        <p class="h3" style="font-size:25px"><span class="hot" style="font-weight:800;margin-right:10px">Q.</span>誰が電話をかけるのですか</p>
+        <p class="sub" style="margin-top:10px;line-height:1.7">社内で教育を受けた当社のコールスタッフのみが対応します。外部への委託は行いません。</p>
+      </div>
+      <div>
+        <p class="h3" style="font-size:25px"><span class="hot" style="font-weight:800;margin-right:10px">Q.</span>どのくらいで成果が出ますか</p>
+        <p class="sub" style="margin-top:10px;line-height:1.7">初月から反応が出ることもありますが、当てる先の修正を2〜3回重ねたところで安定してきます。</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>ここに載っていない点は、オンライン説明会でご確認いただけます</span><span class="pg">19</span></div>
+</div>
+
+<!-- ============ 20 CTA ============ -->
+<div class="slide" style="padding:0">
+  <div style="position:absolute;left:84px;top:62px;width:800px">
+    <p class="eyebrow">NEXT STEP</p>
+    <h2 style="font-size:47px;font-weight:800;line-height:1.34;color:var(--navy);margin-top:18px">
+      まずは30分、<br><span class="mk">貴社の商材で当たる条件</span>を<br>一緒に探させてください。
+    </h2>
+    <p class="sub" style="font-size:23px;margin-top:18px;line-height:1.7">
+      オンラインの個別説明会です。費用はかかりません。<br>お申し込みは下記のフォーム、またはお電話・メールにて承っております。
+    </p>
+    <div class="box hot" style="margin-top:22px;display:inline-block;padding:18px 30px">
+      <p class="eyebrow" style="font-size:17px">オンライン説明会（無料・30分）</p>
+      <p style="font-size:24px;font-weight:700;color:var(--navy);margin-top:6px">お申し込みフォーム　<span class="dim" style="font-size:20px">［URL 要確定］</span></p>
+    </div>
+  </div>
+  <div style="position:absolute;right:84px;top:120px;width:530px;display:flex;flex-direction:column;gap:14px">
+    <div class="box" style="display:flex;gap:20px;align-items:center">
+      <span style="font-size:26px;font-weight:800;color:var(--orange)">01</span>
+      <span style="font-size:24px;font-weight:700;color:var(--navy)">貴社の商材で狙うべきセグメント</span></div>
+    <div class="box" style="display:flex;gap:20px;align-items:center">
+      <span style="font-size:26px;font-weight:800;color:var(--orange)">02</span>
+      <span style="font-size:24px;font-weight:700;color:var(--navy)">想定できるアポ数の考え方</span></div>
+    <div class="box" style="display:flex;gap:20px;align-items:center">
+      <span style="font-size:26px;font-weight:800;color:var(--orange)">03</span>
+      <span style="font-size:24px;font-weight:700;color:var(--navy)">実行量と費用の考え方</span></div>
+    <p class="sub" style="font-size:19px;padding-left:6px">その場で持ち帰っていただける3点です。</p>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;background:var(--navy);color:#fff;padding:26px 84px;display:grid;grid-template-columns:1fr 1fr;gap:60px">
+    <div>
+      <p style="font-size:17px;font-weight:700;letter-spacing:.16em;color:var(--yellow)">CONTACT</p>
+      <p style="font-size:26px;font-weight:700;margin-top:8px">大迫 航</p>
+      <p style="font-size:19px;color:#B9CDE9;margin-top:4px;line-height:1.6">メディアグループ セールスコンサルティング局<br>新規事業コンサルタント リーダー</p>
+      <p style="font-size:24px;font-weight:700;margin-top:10px;color:var(--yellow)">080-3846-0577　<span style="color:#fff;font-size:23px">ohsako@writeup.co.jp</span></p>
+    </div>
+    <div style="border-left:1px solid #2F5087;padding-left:60px">
+      <p style="font-size:17px;font-weight:700;letter-spacing:.16em;color:var(--yellow)">COMPANY</p>
+      <p style="font-size:26px;font-weight:700;margin-top:10px">株式会社ライトアップ</p>
+      <p style="font-size:20px;color:#B9CDE9;margin-top:8px;line-height:1.7">東証グロース市場 6580<br>東京都渋谷区渋谷2-15-1 渋谷クロスタワー32F</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const deck=document.getElementById('deck'),panel=document.getElementById('panel'),tip=document.getElementById('tip');
+  const KEY='ais-dl-deck-v1';let editing=false,sel=null,undo=[];
+
+  /* 置いていない画像は枠だけ見せる */
+  deck.querySelectorAll('.imgbox img').forEach(i=>{ i.onerror=()=>i.remove(); });
+
+  /* --- ツールチップ（グラフのホバー） --- */
+  deck.addEventListener('mouseover',e=>{
+    if(editing) return;
+    const t=e.target.closest('[data-tip]'); if(!t) return;
+    tip.textContent=t.dataset.tip; tip.classList.add('show');
+  });
+  deck.addEventListener('mousemove',e=>{ if(tip.classList.contains('show')){ tip.style.left=(e.clientX+16)+'px'; tip.style.top=(e.clientY-14)+'px'; }});
+  deck.addEventListener('mouseout',e=>{ if(e.target.closest('[data-tip]')) tip.classList.remove('show'); });
+
+  /* --- p.11 絞り込みの段 --- */
+  const fl=document.getElementById('funnelList'),fd=document.getElementById('fDesc');
+  if(fl){ fl.querySelectorAll('.fstep').forEach(st=>{ st.onclick=()=>{
+      if(editing) return;
+      fl.querySelectorAll('.fstep').forEach(x=>x.classList.remove('sel'));
+      st.classList.add('sel'); fd.firstElementChild.textContent=st.dataset.d;
+  };});}
+
+  /* --- p.17 比較表の行を強調 --- */
+  const cmp=document.getElementById('cmp');
+  if(cmp){ cmp.querySelectorAll('.cr').forEach(r=>{ r.style.cursor='pointer'; r.onclick=()=>{
+      if(editing) return;
+      const on=r.style.background==='rgb(255, 244, 233)';
+      cmp.querySelectorAll('.cr').forEach(x=>x.style.background='');
+      if(!on) r.style.background='#FFF4E9';
+  };});}
+
+  /* ================= 編集エンジン ================= */
+  deck.querySelectorAll('.slide *').forEach(el=>{
+    const hasText=[...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim());
+    if(hasText||el.classList.contains('box')||el.classList.contains('imgbox')) el.classList.add('ed');
+  });
+  const save=()=>{try{localStorage.setItem(KEY,deck.innerHTML);}catch(e){}};
+  try{const v=localStorage.getItem(KEY); if(v) deck.innerHTML=v;}catch(e){}
+
+  function select(el){
+    if(sel) sel.classList.remove('ed-sel');
+    sel=el; if(!sel){panel.classList.remove('show');return;}
+    sel.classList.add('ed-sel'); panel.classList.add('show'); sync();
+  }
+  const cs=p=>getComputedStyle(sel)[p];
+  function sync(){
+    const fs=parseFloat(cs('fontSize'));
+    rFs.value=Math.round(fs); vFs.textContent=Math.round(fs)+'px';
+    const ls=cs('letterSpacing'),lsn=ls==='normal'?0:parseFloat(ls);
+    rLs.value=Math.round(lsn); vLs.textContent=(Math.round(lsn*10)/10)+'px';
+    const lh=parseFloat(cs('lineHeight'))/fs*100;
+    rLh.value=Math.round(lh); vLh.textContent=(Math.round(lh)/100).toFixed(2);
+    const m=/translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(sel.style.transform||'');
+    vPos.textContent=m?`${m[1]}, ${m[2]}`:'0, 0';
+    pPath.textContent=sel.tagName.toLowerCase()+(sel.className?'.'+sel.className.split(/\s+/).filter(c=>c&&c!=='ed'&&c!=='ed-sel').join('.'):'');
+  }
+  function set(prop,value){
+    if(!sel) return;
+    undo.push({el:sel,prop,old:sel.style[prop]}); if(undo.length>200) undo.shift();
+    sel.style[prop]=value; save(); sync();
+  }
+  deck.addEventListener('click',e=>{
+    if(!editing) return;
+    const el=e.target.closest('.ed'); if(!el) return;
+    e.preventDefault(); e.stopPropagation();
+    select(e.altKey&&sel?(sel.parentElement.closest('.ed')||el):el);
+  },true);
+  deck.addEventListener('dblclick',e=>{
+    if(!editing) return;
+    const el=e.target.closest('.ed'); if(!el) return;
+    el.contentEditable='true'; el.focus();
+    el.addEventListener('blur',()=>{el.contentEditable='false';save();},{once:true});
+  });
+  let drag=null;
+  deck.addEventListener('mousedown',e=>{
+    if(!editing) return;
+    const el=e.target.closest('.ed'); if(!el||el.isContentEditable) return;
+    const m=/translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(el.style.transform||'');
+    drag={el,sx:e.clientX,sy:e.clientY,ox:m?+m[1]:0,oy:m?+m[2]:0,moved:false};
+  });
+  addEventListener('mousemove',e=>{
+    if(!drag) return;
+    const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;
+    if(!drag.moved&&Math.abs(dx)+Math.abs(dy)<4) return;
+    if(!drag.moved){drag.moved=true;undo.push({el:drag.el,prop:'transform',old:drag.el.style.transform});select(drag.el);}
+    drag.el.style.transform=`translate(${drag.ox+dx}px, ${drag.oy+dy}px)`;
+  });
+  addEventListener('mouseup',()=>{if(drag&&drag.moved){save();sync();}drag=null;});
+
+  rFs.oninput=e=>set('fontSize',e.target.value+'px');
+  rLs.oninput=e=>set('letterSpacing',e.target.value+'px');
+  rLh.oninput=e=>set('lineHeight',(e.target.value/100).toFixed(2));
+  panel.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{if(sel)set('fontSize',(parseFloat(cs('fontSize'))+ +b.dataset.fs)+'px');});
+  panel.querySelectorAll('[data-fw]').forEach(b=>b.onclick=()=>set('fontWeight',b.dataset.fw));
+  panel.querySelectorAll('[data-ta]').forEach(b=>b.onclick=()=>set('textAlign',b.dataset.ta));
+  panel.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{
+    if(!sel) return;
+    const [dx,dy]=b.dataset.mv.split(',').map(Number);
+    const m=/translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(sel.style.transform||'');
+    set('transform',`translate(${(m?+m[1]:0)+dx}px, ${(m?+m[2]:0)+dy}px)`);
+  });
+  bPos0.onclick=()=>set('transform','');
+  bHide.onclick=()=>set('display','none');
+  bClear.onclick=()=>{if(!sel)return;undo.push({el:sel,prop:'cssText',old:sel.style.cssText});sel.style.cssText='';save();sync();};
+  ['#16203A','#123061','#5B6880','#E16D02','#D6540F','#FFFFFF'].forEach(c=>{
+    const b=document.createElement('div');b.className='sw';b.style.background=c;b.title=c;
+    b.onclick=()=>set('color',c);sw.appendChild(b);
+  });
+  addEventListener('keydown',e=>{
+    if(!editing||!sel||sel.isContentEditable) return;
+    if(e.key==='Escape'){select(null);return;}
+    if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();doUndo();return;}
+    const s=e.shiftKey?10:1,map={ArrowUp:[0,-s],ArrowDown:[0,s],ArrowLeft:[-s,0],ArrowRight:[s,0]};
+    if(map[e.key]){
+      e.preventDefault();
+      const [dx,dy]=map[e.key];
+      const m=/translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(sel.style.transform||'');
+      set('transform',`translate(${(m?+m[1]:0)+dx}px, ${(m?+m[2]:0)+dy}px)`);
+    }
+  });
+  function doUndo(){const u=undo.pop();if(!u)return;
+    if(u.prop==='cssText')u.el.style.cssText=u.old;else u.el.style[u.prop]=u.old;
+    save();if(sel)sync();}
+  btnEdit.onclick=()=>{
+    editing=!editing;document.body.classList.toggle('ed-on',editing);
+    btnEdit.classList.toggle('on',editing);btnEdit.textContent=editing?'編集：ON':'編集';
+    if(!editing) select(null);
+  };
+  btnUndo.onclick=doUndo;
+  btnReset.onclick=()=>{if(!confirm('編集内容をすべて破棄して、最初の状態に戻します。よろしいですか。'))return;
+    try{localStorage.removeItem(KEY);}catch(e){}location.reload();};
+  btnPrint.onclick=()=>{select(null);print();};
+  btnExport.onclick=()=>{
+    select(null);
+    const d=document.documentElement.cloneNode(true);
+    d.querySelectorAll('.ed-sel').forEach(el=>el.classList.remove('ed-sel'));
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['<!doctype html>\n'+d.outerHTML],{type:'text/html'}));
+    a.download='AIインサイトセールス_資料.html';a.click();URL.revokeObjectURL(a.href);
+  };
+})();
+</script>
+</body>
+</html>
