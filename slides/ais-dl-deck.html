@@ -1432,7 +1432,9 @@ body.sheet-on #sheet{display:flex}
     const bd=d.querySelector('body'); if(bd){ bd.className='mode-text'; bd.removeAttribute('style'); }
     const a=document.createElement('a');
     a.href=URL.createObjectURL(new Blob(['<!doctype html>\n'+d.outerHTML],{type:'text/html'}));
-    a.download='AIインサイトセールス_資料.html';a.click();URL.revokeObjectURL(a.href);
+    a.download='AIインサイトセールス_資料.html';
+    /* 一度DOMに入れないと、ブラウザがファイル名を無視して download という名前で保存する */
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
   };
   document.getElementById('panelClose').onclick=()=>{ panel.classList.remove('show'); };
   document.getElementById('btnBarHide').onclick=()=>{ document.body.classList.add('bar-min'); fit(); };
