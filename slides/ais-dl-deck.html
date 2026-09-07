@@ -50,7 +50,7 @@
 body{
   background:#E7ECF3;
   display:flex;flex-direction:column;align-items:center;gap:26px;
-  padding:86px 0 60px;
+  padding:132px 0 60px;
   font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic Medium","Yu Gothic",Meiryo,"Noto Sans CJK JP",sans-serif;
   -webkit-font-smoothing:antialiased;color:var(--ink);
 }
@@ -148,11 +148,23 @@ body{
 #bar button:hover{background:#25385A}
 #bar button.on{background:var(--orange);color:#fff;border-color:var(--orange)}
 #bar .hint{color:#7A8BA6;font-weight:400}
+#howto{position:fixed;top:56px;left:0;right:0;z-index:59;background:#FFF4E9;border-bottom:1px solid #F0C9AE;
+        padding:11px 20px;display:flex;align-items:center;gap:26px;flex-wrap:wrap;
+        font:400 14px/1.6 -apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:var(--ink)}
+#howto b{color:var(--orange-2);letter-spacing:.08em}
+#howto em{font-style:normal;font-weight:700;color:var(--navy);background:#fff;border:1px solid #F0C9AE;
+          border-radius:5px;padding:3px 9px;margin-right:8px}
+#howto button{margin-left:auto;background:#fff;border:1px solid #F0C9AE;border-radius:7px;
+              padding:7px 16px;font:inherit;cursor:pointer;color:var(--muted)}
+#howto.hide{display:none}
+body.howto-on{padding-top:132px}
+
 #panel{position:fixed;right:18px;top:74px;width:268px;z-index:60;display:none;background:#fff;
        border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 18px 50px rgba(18,48,97,.18);
        font:400 13px/1.5 -apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:var(--ink);
        max-height:calc(100vh - 100px);overflow:auto}
 #panel.show{display:block}
+#howto.hide ~ #panel{top:74px}
 #panel h4{font-size:12px;letter-spacing:.1em;color:var(--dim);margin:14px 0 7px;font-weight:700}
 #panel h4:first-of-type{margin-top:0}
 #panel .g{display:flex;gap:6px;flex-wrap:wrap}
@@ -163,7 +175,11 @@ body{
 #panel .val{float:right;color:var(--dim);font-variant-numeric:tabular-nums}
 #panel .sw{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);cursor:pointer;flex:0 0 auto}
 #panel .path{font-size:11px;color:var(--dim);word-break:break-all;margin-bottom:10px}
-.ed-on .ed:hover{outline:1px dashed rgba(225,109,2,.55);outline-offset:3px;cursor:pointer}
+.mode-text [contenteditable="plaintext-only"]:hover,
+.mode-text [contenteditable="true"]:hover{background:rgba(255,210,74,.18);cursor:text}
+.mode-text [contenteditable]:focus{outline:2px solid var(--orange);outline-offset:3px;background:#fff}
+.mode-move .ed:hover{outline:2px dashed rgba(225,109,2,.75);outline-offset:3px;cursor:move;
+                     background:rgba(255,210,74,.14)}
 .ed-sel{outline:2px solid var(--orange) !important;outline-offset:3px}
 
 /* ツールチップ */
@@ -175,7 +191,7 @@ body{
 @media print{
   @page{size:1600px 900px;margin:0}
   body{background:#fff;padding:0;gap:0;display:block}
-  #bar,#panel,#tip{display:none !important}
+  #bar,#panel,#tip,#howto{display:none !important}
   .slide{break-after:page;page-break-after:always}
   .ed-sel{outline:none !important}
   .track i{transition:none}
@@ -185,13 +201,24 @@ body{
 <body>
 
 <div id="bar">
-  <button id="btnEdit">編集</button>
+  <button id="btnText" class="on">✎ 文字を編集</button>
+  <button id="btnMove">✥ 位置を動かす</button>
+  <button id="btnView">👁 プレビュー</button>
+  <span style="width:14px"></span>
   <button id="btnUndo">元に戻す</button>
   <button id="btnReset">初期化</button>
   <span class="sp"></span>
-  <span class="hint">クリックで選択／ドラッグで移動／ダブルクリックで文字を直接編集／矢印キーで微調整</span>
+  <span class="hint" id="hint">文字をクリックすると、そのまま打ち込めます</span>
   <button id="btnExport">HTMLを書き出す</button>
   <button id="btnPrint">PDFにする</button>
+</div>
+
+<div id="howto">
+  <b>使い方</b>
+  <span><em>✎ 文字を編集</em>文字をクリックしてそのまま打ち込む。右のパネルでサイズ・色も変えられます</span>
+  <span><em>✥ 位置を動かす</em>ドラッグ、または矢印キー（Shiftで10px）</span>
+  <span><em>Ctrl+Z</em>元に戻す</span>
+  <button id="howtoClose">閉じる</button>
 </div>
 
 <div id="panel">
@@ -884,7 +911,9 @@ body{
 (function(){
   "use strict";
   const deck=document.getElementById('deck'),panel=document.getElementById('panel'),tip=document.getElementById('tip');
-  const KEY='ais-dl-deck-v1';let editing=false,sel=null,undo=[];
+  const KEY='ais-dl-deck-v1';
+  /* 保存された編集内容があれば、他の処理を張る前に戻しておく */
+  try{const v=localStorage.getItem(KEY); if(v) deck.innerHTML=v;}catch(e){}
 
   /* 画像は png → jpg → jpeg → webp の順に探す。全部なければ枠だけ残す */
   deck.querySelectorAll('.imgbox img').forEach(img=>{
@@ -896,7 +925,7 @@ body{
 
   /* --- ツールチップ（グラフのホバー） --- */
   deck.addEventListener('mouseover',e=>{
-    if(editing) return;
+    if(mode!=='view'&&mode!=='text') return;
     const t=e.target.closest('[data-tip]'); if(!t) return;
     tip.textContent=t.dataset.tip; tip.classList.add('show');
   });
@@ -906,7 +935,7 @@ body{
   /* --- p.11 絞り込みの段 --- */
   const fl=document.getElementById('funnelList'),fd=document.getElementById('fDesc');
   if(fl){ fl.querySelectorAll('.fstep').forEach(st=>{ st.onclick=()=>{
-      if(editing) return;
+      if(mode!=='view'&&mode!=='text') return;
       fl.querySelectorAll('.fstep').forEach(x=>x.classList.remove('sel'));
       st.classList.add('sel'); fd.firstElementChild.textContent=st.dataset.d;
   };});}
@@ -914,27 +943,61 @@ body{
   /* --- p.17 比較表の行を強調 --- */
   const cmp=document.getElementById('cmp');
   if(cmp){ cmp.querySelectorAll('.cr').forEach(r=>{ r.style.cursor='pointer'; r.onclick=()=>{
-      if(editing) return;
+      if(mode!=='view'&&mode!=='text') return;
       const on=r.style.background==='rgb(255, 244, 233)';
       cmp.querySelectorAll('.cr').forEach(x=>x.style.background='');
       if(!on) r.style.background='#FFF4E9';
   };});}
 
-  /* ================= 編集エンジン ================= */
+  /* ================= 編集エンジン =================
+     mode は3つ。
+       text : 文字をクリックしてそのまま打てる（既定）
+       move : ドラッグと矢印キーで位置を動かす
+       view : 何も編集しない。本番の見え方とインタラクションの確認用
+  ================================================== */
+  let mode='text', sel=null, undo=[], saveT=null;
+
+  /* テキストを直接持つ要素だけを編集対象にする */
+  const leaves=[];
   deck.querySelectorAll('.slide *').forEach(el=>{
     const hasText=[...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim());
-    if(hasText||el.classList.contains('box')||el.classList.contains('imgbox')) el.classList.add('ed');
+    if(hasText){ el.classList.add('ed','leaf'); leaves.push(el); }
+    else if(el.classList.contains('box')||el.classList.contains('imgbox')) el.classList.add('ed');
   });
-  const save=()=>{try{localStorage.setItem(KEY,deck.innerHTML);}catch(e){}};
-  try{const v=localStorage.getItem(KEY); if(v) deck.innerHTML=v;}catch(e){}
+
+  const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,deck.innerHTML);}catch(e){}},250);};
+
+  function editableOn(on){
+    deck.querySelectorAll('.leaf').forEach(el=>{
+      if(on){
+        el.setAttribute('contenteditable','plaintext-only');
+        if(el.contentEditable!=='plaintext-only') el.setAttribute('contenteditable','true');
+        el.spellcheck=false;
+      } else el.removeAttribute('contenteditable');
+    });
+  }
+  function setMode(m){
+    mode=m;
+    document.body.className=document.body.className.replace(/mode-\w+/g,'').trim()+' mode-'+m;
+    btnText.classList.toggle('on',m==='text');
+    btnMove.classList.toggle('on',m==='move');
+    btnView.classList.toggle('on',m==='view');
+    hint.textContent = m==='text' ? '文字をクリックすると、そのまま打ち込めます'
+                     : m==='move' ? 'ドラッグ、または矢印キー（Shiftで10px）で動かします'
+                     : '編集は止まっています。グラフのホバーやクリックを確認できます';
+    editableOn(m==='text');
+    if(m==='view') select(null);
+  }
 
   function select(el){
     if(sel) sel.classList.remove('ed-sel');
     sel=el; if(!sel){panel.classList.remove('show');return;}
-    sel.classList.add('ed-sel'); panel.classList.add('show'); sync();
+    if(mode!=='text') sel.classList.add('ed-sel');
+    panel.classList.add('show'); sync();
   }
   const cs=p=>getComputedStyle(sel)[p];
   function sync(){
+    if(!sel) return;
     const fs=parseFloat(cs('fontSize'));
     rFs.value=Math.round(fs); vFs.textContent=Math.round(fs)+'px';
     const ls=cs('letterSpacing'),lsn=ls==='normal'?0:parseFloat(ls);
@@ -943,37 +1006,33 @@ body{
     rLh.value=Math.round(lh); vLh.textContent=(Math.round(lh)/100).toFixed(2);
     const m=/translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(sel.style.transform||'');
     vPos.textContent=m?`${m[1]}, ${m[2]}`:'0, 0';
-    pPath.textContent=sel.tagName.toLowerCase()+(sel.className?'.'+sel.className.split(/\s+/).filter(c=>c&&c!=='ed'&&c!=='ed-sel').join('.'):'');
+    pPath.textContent=(sel.textContent||'').trim().slice(0,26)||sel.tagName.toLowerCase();
   }
   function set(prop,value){
     if(!sel) return;
     undo.push({el:sel,prop,old:sel.style[prop]}); if(undo.length>200) undo.shift();
     sel.style[prop]=value; save(); sync();
   }
-  deck.addEventListener('click',e=>{
-    if(!editing) return;
-    const el=e.target.closest('.ed'); if(!el) return;
-    e.preventDefault(); e.stopPropagation();
-    select(e.altKey&&sel?(sel.parentElement.closest('.ed')||el):el);
-  },true);
-  deck.addEventListener('dblclick',e=>{
-    if(!editing) return;
-    const el=e.target.closest('.ed'); if(!el) return;
-    el.contentEditable='true'; el.focus();
-    el.addEventListener('blur',()=>{el.contentEditable='false';save();},{once:true});
-  });
-  let drag=null;
+
+  /* クリック：どのモードでもパネルの対象を切り替える。
+     text モードでは既定動作を止めないので、そのままカーソルが入る。 */
   deck.addEventListener('mousedown',e=>{
-    if(!editing) return;
-    const el=e.target.closest('.ed'); if(!el||el.isContentEditable) return;
-    const m=/translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(el.style.transform||'');
-    drag={el,sx:e.clientX,sy:e.clientY,ox:m?+m[1]:0,oy:m?+m[2]:0,moved:false};
+    if(mode==='view') return;
+    const el=e.target.closest('.ed'); if(!el) return;
+    if(mode==='move'){ e.preventDefault();
+      const m=/translate\((-?\d+)px,\s*(-?\d+)px\)/.exec(el.style.transform||'');
+      drag={el,sx:e.clientX,sy:e.clientY,ox:m?+m[1]:0,oy:m?+m[2]:0,moved:false};
+    }
+    select(e.altKey&&sel?(sel.parentElement.closest('.ed')||el):el);
   });
+  deck.addEventListener('input',()=>save());
+
+  let drag=null;
   addEventListener('mousemove',e=>{
     if(!drag) return;
     const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;
-    if(!drag.moved&&Math.abs(dx)+Math.abs(dy)<4) return;
-    if(!drag.moved){drag.moved=true;undo.push({el:drag.el,prop:'transform',old:drag.el.style.transform});select(drag.el);}
+    if(!drag.moved&&Math.abs(dx)+Math.abs(dy)<3) return;
+    if(!drag.moved){drag.moved=true;undo.push({el:drag.el,prop:'transform',old:drag.el.style.transform});}
     drag.el.style.transform=`translate(${drag.ox+dx}px, ${drag.oy+dy}px)`;
   });
   addEventListener('mouseup',()=>{if(drag&&drag.moved){save();sync();}drag=null;});
@@ -997,11 +1056,12 @@ body{
     const b=document.createElement('div');b.className='sw';b.style.background=c;b.title=c;
     b.onclick=()=>set('color',c);sw.appendChild(b);
   });
+
   addEventListener('keydown',e=>{
-    if(!editing||!sel||sel.isContentEditable) return;
+    if((e.ctrlKey||e.metaKey)&&e.key==='z'&&mode!=='text'){e.preventDefault();doUndo();return;}
     if(e.key==='Escape'){select(null);return;}
-    if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();doUndo();return;}
-    const s=e.shiftKey?10:1,map={ArrowUp:[0,-s],ArrowDown:[0,s],ArrowLeft:[-s,0],ArrowRight:[s,0]};
+    if(mode!=='move'||!sel) return;
+    const st=e.shiftKey?10:1,map={ArrowUp:[0,-st],ArrowDown:[0,st],ArrowLeft:[-st,0],ArrowRight:[st,0]};
     if(map[e.key]){
       e.preventDefault();
       const [dx,dy]=map[e.key];
@@ -1012,23 +1072,27 @@ body{
   function doUndo(){const u=undo.pop();if(!u)return;
     if(u.prop==='cssText')u.el.style.cssText=u.old;else u.el.style[u.prop]=u.old;
     save();if(sel)sync();}
-  btnEdit.onclick=()=>{
-    editing=!editing;document.body.classList.toggle('ed-on',editing);
-    btnEdit.classList.toggle('on',editing);btnEdit.textContent=editing?'編集：ON':'編集';
-    if(!editing) select(null);
-  };
+
+  btnText.onclick=()=>setMode('text');
+  btnMove.onclick=()=>setMode('move');
+  btnView.onclick=()=>setMode('view');
   btnUndo.onclick=doUndo;
   btnReset.onclick=()=>{if(!confirm('編集内容をすべて破棄して、最初の状態に戻します。よろしいですか。'))return;
     try{localStorage.removeItem(KEY);}catch(e){}location.reload();};
-  btnPrint.onclick=()=>{select(null);print();};
+  btnPrint.onclick=()=>{select(null);const m=mode;setMode('view');setTimeout(()=>{print();setMode(m);},80);};
   btnExport.onclick=()=>{
     select(null);
     const d=document.documentElement.cloneNode(true);
     d.querySelectorAll('.ed-sel').forEach(el=>el.classList.remove('ed-sel'));
+    d.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));
     const a=document.createElement('a');
     a.href=URL.createObjectURL(new Blob(['<!doctype html>\n'+d.outerHTML],{type:'text/html'}));
     a.download='AIインサイトセールス_資料.html';a.click();URL.revokeObjectURL(a.href);
   };
+  howtoClose.onclick=()=>{document.getElementById('howto').classList.add('hide');
+    document.body.style.paddingTop='86px';};
+
+  setMode('text');
 })();
 </script>
 </body>
