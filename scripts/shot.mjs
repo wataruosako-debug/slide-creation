@@ -13,6 +13,8 @@ await mkdir(outDir, { recursive: true });
 const browser = await chromium.launch({ executablePath: CHROME, args: ["--no-sandbox", "--font-render-hinting=none"] });
 const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1 });
 await page.goto("file://" + resolve(input));
+// 固定表示のツールバーがスライドに重なるので、撮影時だけ隠す
+await page.addStyleTag({ content: "#bar,#howto,#panel,#tip,#drop{display:none !important} body{padding-top:0 !important}" });
 const slides = await page.locator(".slide").all();
 for (const [i, s] of slides.entries()) {
   const n = String(i + 1).padStart(2, "0");
