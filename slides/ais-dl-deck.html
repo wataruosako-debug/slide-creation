@@ -184,6 +184,30 @@ body.howto-on{padding-top:132px}
                      background:rgba(255,210,74,.14)}
 .ed-sel{outline:2px solid var(--orange) !important;outline-offset:3px}
 
+/* 画像の割り当て画面 */
+#assign{position:fixed;inset:0;z-index:82;display:none;align-items:center;justify-content:center;background:rgba(10,22,44,.6)}
+#assign.show{display:flex}
+#assign .win{background:#fff;border-radius:16px;padding:26px 30px;width:660px;max-height:82vh;overflow:auto;
+             box-shadow:0 30px 80px rgba(10,22,44,.35);
+             font:400 14px/1.7 -apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:var(--ink)}
+#assign h3{font-size:20px;color:var(--navy);margin-bottom:6px}
+#assign p.note{color:var(--muted);margin-bottom:18px}
+#assign .r{display:grid;grid-template-columns:72px 1fr 250px;gap:14px;align-items:center;
+           padding:10px 0;border-top:1px solid var(--line)}
+#assign .r img{width:72px;height:56px;object-fit:contain;background:var(--paper-2);border-radius:6px}
+#assign .r b{font-size:13px;word-break:break-all;font-weight:400;color:var(--muted)}
+#assign select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+#assign .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+#assign button{border-radius:9px;padding:11px 22px;font:600 14px inherit;cursor:pointer;border:1px solid var(--line);background:#fff}
+#assign button.go{background:var(--orange);border-color:var(--orange);color:#fff}
+
+/* 文字モードでは画像枠をクリックして差し替えられる */
+.mode-text .imgbox{cursor:pointer;position:relative}
+.mode-text .imgbox:hover{outline:2px dashed var(--orange);outline-offset:4px}
+.mode-text .imgbox:hover::before{content:"クリックして画像を差し替え";position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);z-index:5;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;
+  font-size:15px;font-weight:700;white-space:nowrap}
+
 /* 画像のドロップ領域 */
 #drop{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
       background:rgba(18,48,97,.82);backdrop-filter:blur(2px)}
@@ -261,7 +285,13 @@ body.howto-on{padding-top:132px}
 </div>
 <div id="tip"></div>
 <input type="file" id="fileIn" accept="image/*" multiple hidden>
-<div id="drop"><div><b>ここに画像をドロップ</b><span>ファイル名で自動的に振り分けます（KV-01 / CH-01 / P-01 …）</span></div></div>
+<div id="drop"><div><b>ここに画像をドロップ</b><span>ファイル名にIDがあれば自動、なければ次の画面で選べます</span></div></div>
+<div id="assign"><div class="win">
+  <h3>どこに入れるか選んでください</h3>
+  <p class="note">ファイル名から判別できなかった画像です。使わないものは「入れない」を選んでください。</p>
+  <div id="assignRows"></div>
+  <div class="btns"><button id="asCancel">やめる</button><button id="asGo" class="go">配置する</button></div>
+</div></div>
 
 <div id="deck">
 
@@ -1095,32 +1125,81 @@ body.howto-on{padding-top:132px}
   const drop=document.getElementById('drop'), fileIn=document.getElementById('fileIn');
   const SLOTS=[...deck.querySelectorAll('.imgbox')].map(b=>b.dataset.id);
 
-  function putImages(files){
-    let hit=0, miss=[];
-    [...files].forEach(f=>{
-      const base=f.name.replace(/\.[^.]+$/,'').toUpperCase().replace(/[_\s]/g,'-');
+  const SLOT_LABEL={'KV-01':'p.1 表紙','CH-01':'p.3 章扉①（課題）','CH-02':'p.8 章扉②（サービス）',
+    'P-01':'p.4 採用しても続かない','P-02':'p.4 紹介と既存に依存','P-03':'p.4 当てる先を外している',
+    'P-04':'p.13 共催セミナー','D-01':'p.7 勝ち筋は相手側にある','D-02':'p.11 リストの絞り込み'};
+
+  function place(id,dataURL){
+    const box=deck.querySelector(`.imgbox[data-id="${id}"]`); if(!box) return;
+    let img=box.querySelector('img');
+    if(!img){ img=document.createElement('img'); box.appendChild(img); }
+    img.src=dataURL; box.classList.add('filled');
+  }
+  function persist(extra){
+    let msg=extra||'';
+    try{ localStorage.setItem(KEY,deck.innerHTML); }
+    catch(e){ msg+='\n\n※ 画像が大きく、ブラウザへの自動保存ができませんでした。「HTMLを書き出す」で保存してください。'; }
+    if(msg) alert(msg.trim());
+  }
+  const readAll=files=>Promise.all([...files].map(f=>new Promise(res=>{
+    const r=new FileReader(); r.onload=()=>res({name:f.name,url:r.result}); r.readAsDataURL(f);
+  })));
+
+  /* ファイル名にIDがあれば自動。なければ割り当て画面で選んでもらう。 */
+  async function putImages(files, forceId){
+    const items=await readAll(files);
+    if(forceId){ place(forceId,items[0].url); persist(`${SLOT_LABEL[forceId]} に配置しました。`); return; }
+    let hit=0; const unknown=[];
+    items.forEach(it=>{
+      const base=it.name.replace(/\.[^.]+$/,'').toUpperCase().replace(/[_\s]/g,'-');
       const id=SLOTS.find(s=>base.includes(s));
-      if(!id){ miss.push(f.name); return; }
-      const box=deck.querySelector(`.imgbox[data-id="${id}"]`);
-      const r=new FileReader();
-      r.onload=()=>{
-        let img=box.querySelector('img');
-        if(!img){ img=document.createElement('img'); box.appendChild(img); }
-        img.src=r.result; box.classList.add('filled'); save();
-      };
-      r.readAsDataURL(f); hit++;
+      if(id){ place(id,it.url); hit++; } else unknown.push(it);
     });
-    setTimeout(()=>{
-      let msg=`${hit}枚を配置しました。`;
-      if(miss.length) msg+=`\n\n振り分けられなかったファイル：\n${miss.join('\n')}\n\nファイル名に KV-01 / CH-01 / CH-02 / P-01〜P-04 / D-01 / D-02 のいずれかを含めてください。`;
-      try{ localStorage.setItem(KEY,deck.innerHTML); }
-      catch(e){ msg+='\n\n※ 画像が大きく、ブラウザへの自動保存ができませんでした。「HTMLを書き出す」で保存してください。'; }
-      alert(msg);
-    },600);
+    if(!unknown.length){ persist(`${hit}枚を配置しました。`); return; }
+    openAssign(unknown, hit);
   }
 
-  btnImg.onclick=()=>fileIn.click();
-  fileIn.onchange=()=>{ putImages(fileIn.files); fileIn.value=''; };
+  /* 割り当て画面 */
+  const assign=document.getElementById('assign'), rows=document.getElementById('assignRows');
+  function openAssign(items, already){
+    rows.innerHTML='';
+    items.forEach((it,i)=>{
+      const used=[...deck.querySelectorAll('.imgbox.filled')].map(b=>b.dataset.id);
+      const opts=SLOTS.map(id=>`<option value="${id}">${id}　${SLOT_LABEL[id]}${used.includes(id)?'（差し替え）':''}</option>`).join('');
+      const r=document.createElement('div'); r.className='r';
+      r.innerHTML=`<img src="${it.url}"><b>${it.name}</b>
+        <select data-i="${i}"><option value="">入れない</option>${opts}</select>`;
+      rows.appendChild(r);
+    });
+    // 空いている枠を上から順に初期値として入れておく
+    const free=SLOTS.filter(id=>!deck.querySelector(`.imgbox[data-id="${id}"]`).classList.contains('filled'));
+    rows.querySelectorAll('select').forEach((sel,i)=>{ if(free[i]) sel.value=free[i]; });
+    assign.classList.add('show');
+    document.getElementById('asGo').onclick=()=>{
+      let n=already||0;
+      rows.querySelectorAll('select').forEach(sel=>{
+        const id=sel.value; if(!id) return;
+        place(id, items[+sel.dataset.i].url); n++;
+      });
+      assign.classList.remove('show'); persist(`${n}枚を配置しました。`);
+    };
+    document.getElementById('asCancel').onclick=()=>{
+      assign.classList.remove('show');
+      if(already) persist(`${already}枚を配置しました。`);
+    };
+  }
+
+  /* 枠をクリックして、その枠だけ差し替える */
+  let targetSlot=null;
+  deck.addEventListener('click',e=>{
+    if(mode!=='text') return;
+    const box=e.target.closest('.imgbox'); if(!box) return;
+    e.preventDefault(); e.stopPropagation();
+    targetSlot=box.dataset.id; fileIn.click();
+  },true);
+
+  btnImg.onclick=()=>{ targetSlot=null; fileIn.click(); };
+  fileIn.onchange=()=>{ putImages(fileIn.files, targetSlot); targetSlot=null; fileIn.value=''; };
   addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('show');});
   drop.addEventListener('dragleave',e=>{ if(e.target===drop) drop.classList.remove('show'); });
   addEventListener('drop',e=>{
