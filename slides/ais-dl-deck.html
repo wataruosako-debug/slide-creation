@@ -154,6 +154,8 @@ body{
 #bar button:hover{background:#25385A}
 #bar button.on{background:var(--orange);color:#fff;border-color:var(--orange)}
 #bar .hint{color:#7A8BA6;font-weight:400}
+#bar #btnBarHide,#bar #btnMore,#barShow{display:none}
+#barMore{display:contents}
 #howto{position:fixed;top:56px;left:0;right:0;z-index:59;background:#FFF4E9;border-bottom:1px solid #F0C9AE;
         padding:11px 20px;display:flex;align-items:center;gap:26px;flex-wrap:wrap;
         font:400 14px/1.6 -apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:var(--ink)}
@@ -268,12 +270,26 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
 /* ---------- スマホ・タブレット ---------- */
 @media (max-width:1200px){
   body{padding-top:0 !important;gap:14px;background:#DDE3EB;align-items:flex-start}
-  #bar .sp2{width:100%;height:0}
-  #bar{position:sticky;top:0;height:auto;flex-wrap:wrap;gap:7px;padding:8px 10px}
-  #bar button{padding:11px 13px;font-size:14px;min-height:42px}
+  #bar .sp2{display:none}
+  #bar{position:sticky;top:0;height:auto;width:100%;align-self:stretch;flex-wrap:wrap;gap:5px;padding:6px 8px}
+  #bar button{padding:8px 10px;min-height:36px;border-radius:8px}
+  #bar button[data-min]{font-size:0}
+  #bar button[data-min]::after{content:attr(data-min);font-size:12.5px;font-weight:700;line-height:1}
+  #bar #btnBarHide,#bar #btnMore{display:inline-block;padding:8px 11px;font-size:13px}
+  #bar>span[style]{display:none}
   #bar .hint,#bar .sp{display:none}
-  #howto{position:static;padding:9px 12px;font-size:12px;gap:10px}
+  /* その他（画像・戻す・初期化）は ⋯ で出す */
+  #barMore{display:none;width:100%;gap:5px}
+  body.more-on #barMore{display:flex}
+  body.more-on #btnMore{background:var(--orange);color:#fff;border-color:var(--orange)}
+  /* しまった状態：小さな ☰ だけ残す */
+  body.bar-min #bar{display:none}
+  body.bar-min #barShow{display:block;position:fixed;top:8px;left:8px;z-index:61;
+    background:#0F1A2E;color:#fff;border:1px solid #2C3F5D;border-radius:10px;
+    padding:9px 13px;font:700 15px/1 inherit;box-shadow:0 4px 16px rgba(10,22,44,.35);cursor:pointer}
+  #howto{position:static;width:100%;align-self:stretch;padding:8px 10px;font-size:12px;gap:8px}
   #howto span{display:block}
+  #howto em{font-size:11px;padding:2px 6px}
   #panel,#slots{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:58vh;border-radius:14px}
   #panel .g button,#slots .hd2 button{min-height:42px}
   #assign .win{width:calc(100vw - 24px);padding:18px}
@@ -304,20 +320,24 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
 <body>
 
 <div id="bar">
-  <button id="btnText" class="on">✎ 文字を編集</button>
-  <button id="btnMove">✥ 位置を動かす</button>
-  <button id="btnView">👁 プレビュー</button>
+  <button id="btnBarHide" title="ツールバーをしまう">▲</button>
+  <button id="btnText" class="on" data-min="文字">✎ 文字を編集</button>
+  <button id="btnMove" data-min="位置">✥ 位置を動かす</button>
+  <button id="btnView" data-min="見る">👁 プレビュー</button>
   <span style="width:14px"></span>
-  <button id="btnImg">🖼 画像を入れる</button>
-  <button id="btnUndo">元に戻す</button>
-  <span class="sp2"></span>
-  <button id="btnZo">− 縮小</button><button id="btnZlvl" title="タップで幅に合わせる">100%</button><button id="btnZi">＋ 拡大</button>
-  <button id="btnReset">初期化</button>
+  <button id="btnZo" data-min="−">− 縮小</button><button id="btnZlvl" data-min="幅" title="タップで幅に合わせる">100%</button><button id="btnZi" data-min="＋">＋ 拡大</button>
+  <button id="btnMore" title="その他">⋯</button>
+  <span id="barMore">
+    <button id="btnImg" data-min="🖼 画像">🖼 画像を入れる</button>
+    <button id="btnUndo" data-min="↩ 戻す">元に戻す</button>
+    <button id="btnReset" data-min="⟲ 初期化">初期化</button>
+  </span>
   <span class="sp"></span>
   <span class="hint" id="hint">文字をクリックすると、そのまま打ち込めます</span>
   <button id="btnExport">HTMLを書き出す</button>
   <button id="btnPrint">PDFにする</button>
 </div>
+<button id="barShow" title="ツールバーを出す">☰</button>
 
 <div id="howto">
   <b>使い方</b>
@@ -1341,6 +1361,9 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
     a.download='AIインサイトセールス_資料.html';a.click();URL.revokeObjectURL(a.href);
   };
   document.getElementById('panelClose').onclick=()=>{ panel.classList.remove('show'); };
+  document.getElementById('btnBarHide').onclick=()=>{ document.body.classList.add('bar-min'); fit(); };
+  document.getElementById('barShow').onclick=()=>{ document.body.classList.remove('bar-min'); fit(); };
+  document.getElementById('btnMore').onclick=()=>{ document.body.classList.toggle('more-on'); fit(); };
   howtoClose.onclick=()=>{document.getElementById('howto').classList.add('hide');fit();};
 
   /* ================= 画面幅に合わせて縮小 ================= */
@@ -1356,7 +1379,8 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
     stage.style.width  = Math.round(1600*zoom)+'px';
     stage.style.height = Math.round(deck.offsetHeight*zoom)+'px';
     const lvl=document.getElementById('btnZlvl');
-    if(lvl) lvl.textContent = zoomMode==='fit' ? '幅に合わせる' : Math.round(zoom*100)+'%';
+    if(lvl){ const t = zoomMode==='fit' ? '幅に合わせる' : Math.round(zoom*100)+'%';
+      lvl.textContent=t; lvl.setAttribute('data-min', zoomMode==='fit' ? '幅' : Math.round(zoom*100)+'%'); }
     const bar=document.getElementById('bar'), ho=document.getElementById('howto');
     const fixed=getComputedStyle(bar).position==='fixed';
     document.body.style.paddingTop = fixed ? (bar.offsetHeight+(ho.classList.contains('hide')?0:ho.offsetHeight))+'px' : '0px';
@@ -1373,6 +1397,8 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
   document.getElementById('btnZi').onclick=()=>stepZoom(1);
   document.getElementById('btnZo').onclick=()=>stepZoom(-1);
   document.getElementById('btnZlvl').onclick=()=>{ zoomMode='fit'; fit(); scrollTo({left:0}); };
+  /* スマホでは使い方の説明を最初から畳んでおく（画面を食うため） */
+  if(matchMedia('(max-width:1200px)').matches) document.getElementById('howto').classList.add('hide');
   fit();
 
   /* ================= 選んだ範囲だけを変える ================= */
