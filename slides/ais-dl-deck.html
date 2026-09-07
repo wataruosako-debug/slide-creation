@@ -47,7 +47,8 @@
 
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-#stage{position:relative;flex:0 0 auto}
+#vp{width:100%;max-width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;flex:0 0 auto}
+#stage{position:relative;margin:0 auto}
 #deck{width:1600px;transform-origin:top left}
 
 body{
@@ -257,7 +258,7 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
 #drop span{color:#C9DCF5}
 
 /* ドラッグで選んだ範囲だけを変えるツールバー */
-#seltb{position:fixed;z-index:90;display:none;gap:6px;align-items:center;
+#seltb{position:fixed;z-index:90;display:none;transform:translateZ(0);will-change:transform;touch-action:manipulation;gap:6px;align-items:center;
   background:var(--navy);border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(10,22,44,.4)}
 #seltb.show{display:flex;flex-wrap:wrap;max-width:min(94vw,520px)}
 #seltb button{background:#22417A;color:#fff;border:none;border-radius:8px;padding:10px 14px;
@@ -266,6 +267,8 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
 #seltb #selCols{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 #seltb .cs{display:block;width:32px;height:32px;border-radius:50%;border:2px solid #fff;cursor:pointer;flex:0 0 auto}
 #seltb .sep{width:1px;height:26px;background:#3B5B93;margin:0 3px}
+#seltb #selSz{min-width:44px;text-align:center;color:#FFD24A;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.leaf{-webkit-user-select:text;user-select:text}
 
 /* ---------- スマホ・タブレット ---------- */
 @media (max-width:1200px){
@@ -309,6 +312,7 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
   #bar,#panel,#tip,#howto,#drop,#slots,#assign,#seltb{display:none !important}
   #deck{transform:none !important}
   #stage{width:auto !important;height:auto !important}
+  #vp{overflow:visible !important}
   .imgbox{outline:none !important;background:none !important;overflow:hidden !important}
   .imgbox::before,.imgbox::after{content:none !important}
   .slide{break-after:page;page-break-after:always}
@@ -375,7 +379,7 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
 </div>
 <div id="tip"></div>
 <div id="seltb">
-  <button data-sz="-4">A−</button><button data-sz="4">A＋</button>
+  <button data-sz="-1">A−</button><span id="selSz">24</span><button data-sz="1">A＋</button>
   <button data-bold>太字</button><button data-mk>マーカー</button>
   <span class="sep"></span><span id="selCols"></span><span class="sep"></span>
   <button data-clear>解除</button>
@@ -396,7 +400,7 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
   <div class="btns"><button id="asCancel">やめる</button><button id="asGo" class="go">配置する</button></div>
 </div></div>
 
-<div id="stage"><div id="deck">
+<div id="vp"><div id="stage"><div id="deck">
 
 <!-- ============ 01 表紙 ============ -->
 <div class="slide" style="padding:0">
@@ -1040,7 +1044,7 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
       <p style="font-size:17px;font-weight:700;letter-spacing:.16em;color:var(--yellow)" class="ed leaf" spellcheck="false">COMPANY</p>
       <p style="font-size:26px;font-weight:700;margin-top:10px" class="ed leaf" spellcheck="false">株式会社ライトアップ</p>
       <p style="font-size:20px;color:#B9CDE9;margin-top:8px;line-height:1.7" class="ed leaf" spellcheck="false">東証グロース市場 6580<br>東京都渋谷区渋谷2-15-1 渋谷クロスタワー32F</p>
-</div></div>
+</div></div></div>
   </div>
 </div>
 
@@ -1392,11 +1396,12 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
     if(dir<0){ i = ZSTEPS.filter(v=>v<cur-0.001).length-1; }
     i = Math.max(0,Math.min(ZSTEPS.length-1,i));
     zoomMode = ZSTEPS[i]; fit();
-    if(dir>0) scrollTo({left:(document.documentElement.scrollWidth-innerWidth)/2});
+    const vp=document.getElementById('vp');
+    if(dir>0) vp.scrollLeft=(vp.scrollWidth-vp.clientWidth)/2;
   }
   document.getElementById('btnZi').onclick=()=>stepZoom(1);
   document.getElementById('btnZo').onclick=()=>stepZoom(-1);
-  document.getElementById('btnZlvl').onclick=()=>{ zoomMode='fit'; fit(); scrollTo({left:0}); };
+  document.getElementById('btnZlvl').onclick=()=>{ zoomMode='fit'; fit(); document.getElementById('vp').scrollLeft=0; };
   /* スマホでは使い方の説明を最初から畳んでおく（画面を食うため） */
   if(matchMedia('(max-width:1200px)').matches) document.getElementById('howto').classList.add('hide');
   fit();
@@ -1410,7 +1415,7 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
     const n=s.anchorNode; if(!n) return null;
     const el=n.nodeType===3?n.parentElement:n;
     if(!deck.contains(el)||!el.closest('.leaf')) return null;
-    lastRange=s.getRangeAt(0).cloneRange();
+    if(!tbLock) lastRange=s.getRangeAt(0).cloneRange();   /* ツールバー操作中は上書きしない */
     return s;
   }
   /* 指で操作すると選択が消えることがあるので、直前の範囲を戻してから処理する */
@@ -1423,19 +1428,27 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
     try{ s.addRange(lastRange); }catch(e){ return null; }
     return s.isCollapsed?null:s;
   }
+  const coarse=matchMedia('(pointer:coarse)').matches;   /* 指で操作する端末か */
+  let tbLock=false;                                       /* ツールバー操作中は消さない */
+  const selSz=document.getElementById('selSz');
   function showSeltb(){
+    if(tbLock) return;
     const s=selInDeck();
     if(mode!=='text'||!s){ seltb.classList.remove('show'); return; }
-    const r=s.getRangeAt(0).getBoundingClientRect();
+    const rg=s.getRangeAt(0), r=rg.getBoundingClientRect();
     if(!r.width&&!r.height){ seltb.classList.remove('show'); return; }
+    selSz.textContent=Math.round(baseSize(rg));
     seltb.classList.add('show');
     const w=seltb.offsetWidth,h=seltb.offsetHeight;
     const bar=document.getElementById('bar');
     const br=getComputedStyle(bar).position!=='static' ? bar.getBoundingClientRect().bottom : 0;
-    let x=r.left+r.width/2-w/2, y=r.top-h-12;
-    if(y<br+6) y=r.bottom+12;
+    let x=r.left+r.width/2-w/2;
+    /* 指の端末では iOS 標準のメニュー（コピー等）が選択の上に出るので、下側に出す */
+    let y = coarse ? r.bottom+14 : r.top-h-12;
+    if(!coarse && y<br+6) y=r.bottom+12;
+    if(coarse && y+h>innerHeight-8) y=r.top-h-12;
     seltb.style.left=Math.max(8,Math.min(x,innerWidth-w-8))+'px';
-    seltb.style.top=Math.min(y,innerHeight-h-8)+'px';
+    seltb.style.top=Math.max(br+6,Math.min(y,innerHeight-h-8))+'px';
   }
   document.addEventListener('selectionchange',()=>setTimeout(showSeltb,10));
   addEventListener('scroll',()=>{ if(seltb.classList.contains('show')) showSeltb(); },true);
@@ -1444,10 +1457,18 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
   function wrapSel(fn){
     const s=selForEdit(); if(!s) return;
     const r=s.getRangeAt(0);
-    const span=document.createElement('span');
-    fn(span, r);
-    try{ span.appendChild(r.extractContents()); r.insertNode(span); }
-    catch(e){ return; }
+    /* 同じ範囲に続けて操作したときは、前に作った span を使い回す（入れ子にしない） */
+    let c=r.commonAncestorContainer; if(c.nodeType===3) c=c.parentElement;
+    const reuse = c && c.tagName==='SPAN' && !c.id && !c.classList.contains('leaf')
+               && (c.getAttribute('style')||c.className==='mk') && r.toString()===c.textContent;
+    let span;
+    if(reuse){ span=c; fn(span, r); }
+    else{
+      span=document.createElement('span');
+      fn(span, r);
+      try{ span.appendChild(r.extractContents()); r.insertNode(span); }
+      catch(e){ return; }
+    }
     const nr=document.createRange(); nr.selectNodeContents(span);
     s.removeAllRanges(); s.addRange(nr);
     save(); setTimeout(showSeltb,10);
@@ -1456,15 +1477,46 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
     const n=r.startContainer, el=n.nodeType===3?n.parentElement:n;
     return parseFloat(getComputedStyle(el).fontSize)||24;
   }
+  /* ツールバーに触れても選択が消えないように、既定動作を止める。
+     iOS では touchstart を止めると click が来ないので、touchend で直接実行する */
   seltb.addEventListener('mousedown',e=>e.preventDefault());
-  seltb.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') e.preventDefault(); });
-  seltb.querySelectorAll('[data-sz]').forEach(b=>b.onclick=()=>{
+  /* 指が触れた瞬間の選択範囲を控えておき、離した時にその範囲へ戻してから実行する。
+     端末によっては触れただけで選択が動くため、これが一番確実 */
+  let pendRange=null;
+  seltb.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    const s=selInDeck();
+    pendRange = s ? s.getRangeAt(0).cloneRange() : (lastRange ? lastRange.cloneRange() : null);
+    tbLock=true;
+  },{passive:false});
+  seltb.addEventListener('touchcancel',()=>{ tbLock=false; pendRange=null; });
+  function restorePend(){
+    if(!pendRange) return;
+    const sel=getSelection(); sel.removeAllRanges();
+    try{ sel.addRange(pendRange); }catch(err){}
+  }
+  function bindTap(el,fn){
+    let byTouch=0;
+    el.addEventListener('touchend',e=>{
+      e.preventDefault(); byTouch=Date.now();
+      restorePend(); fn();
+      setTimeout(()=>{ tbLock=false; showSeltb(); },30);
+    },{passive:false});
+    el.addEventListener('click',e=>{ if(Date.now()-byTouch<700) return; fn(); });
+  }
+  /* 段階的に大きく／小さく（+4px では縮小表示のスマホで変化が分からないため） */
+  const SZ=[10,12,14,16,18,20,22,24,26,28,30,34,38,42,46,52,58,64,72,82,96,110,128,150];
+  function stepSize(cur,dir){
+    if(dir>0){ const up=SZ.find(v=>v>cur+0.5); return up||Math.round(cur*1.15); }
+    const down=SZ.filter(v=>v<cur-0.5); return down.length?down[down.length-1]:Math.max(8,Math.round(cur/1.15));
+  }
+  seltb.querySelectorAll('[data-sz]').forEach(b=>bindTap(b,()=>{
     const d=+b.dataset.sz;
-    wrapSel((sp,r)=>{ sp.style.fontSize=Math.max(10,Math.round(baseSize(r)+d))+'px'; });
-  });
-  seltb.querySelector('[data-bold]').onclick=()=>wrapSel(sp=>sp.style.fontWeight='800');
-  seltb.querySelector('[data-mk]').onclick=()=>wrapSel(sp=>sp.className='mk');
-  seltb.querySelector('[data-clear]').onclick=()=>{
+    wrapSel((sp,r)=>{ sp.style.fontSize=stepSize(baseSize(r),d)+'px'; });
+  }));
+  bindTap(seltb.querySelector('[data-bold]'),()=>wrapSel(sp=>sp.style.fontWeight='800'));
+  bindTap(seltb.querySelector('[data-mk]'),()=>wrapSel(sp=>sp.classList.add('mk')));
+  bindTap(seltb.querySelector('[data-clear]'),()=>{
     const s=selForEdit(); if(!s) return;
     const r=s.getRangeAt(0);
     const sc=r.startContainer, el0=sc.nodeType===3?sc.parentElement:sc;
@@ -1479,10 +1531,10 @@ body.slots-on .imgbox{outline:3px solid var(--orange);outline-offset:-2px;backgr
       if(!sp.className.replace(/\b(ed|leaf)\b/g,'').trim()) sp.replaceWith(...sp.childNodes); });
     leaf.normalize(); save(); seltb.classList.remove('show');
     getSelection().removeAllRanges(); lastRange=null;
-  };
+  });
   ['#123061','#E16D02','#D6540F','#16203A','#5B6880'].forEach(c=>{
     const d=document.createElement('span'); d.className='cs'; d.style.background=c; d.title=c;
-    d.onclick=()=>wrapSel(sp=>sp.style.color=c);
+    bindTap(d,()=>wrapSel(sp=>sp.style.color=c));
     document.getElementById('selCols').appendChild(d);
   });
 
