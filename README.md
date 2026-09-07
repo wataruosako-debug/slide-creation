@@ -43,7 +43,9 @@ node scripts/preview-pdf.mjs slides/ai-insight-sales-v1.html preview.pdf
   - p.11 各段をクリックすると絞り込み条件の説明が切り替わる
   - p.14 ファネルの各段にホバーすると通過率
   - p.17 比較表の行をクリックするとその軸を強調
-- **画像** は `slides/images/` に ID名（`KV-01.png` など）で置くと入る。プロンプトは `docs/image-prompts.md`
+- **画像** はウィンドウにドラッグ＆ドロップするだけで入る（ファイル名のIDで自動振り分け）。
+  `slides/images/` に ID名で置く方法も使える。プロンプトは `docs/image-prompts.md`
+  入れた画像はHTMLに埋め込まれるので、「HTMLを書き出す」で画像込みの1ファイルになる
 - 未確定：説明会の申込URL、稼働開始までの期間（該当箇所に［要確定］と表示）
 
 ## ダーク版テンプレート `dark-deck.html`

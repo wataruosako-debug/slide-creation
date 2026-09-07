@@ -182,6 +182,15 @@ body.howto-on{padding-top:132px}
                      background:rgba(255,210,74,.14)}
 .ed-sel{outline:2px solid var(--orange) !important;outline-offset:3px}
 
+/* 画像のドロップ領域 */
+#drop{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+      background:rgba(18,48,97,.82);backdrop-filter:blur(2px)}
+#drop.show{display:flex}
+#drop div{border:3px dashed #fff;border-radius:20px;padding:60px 90px;text-align:center;color:#fff;
+          font:400 18px/1.9 -apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
+#drop b{display:block;font-size:30px;margin-bottom:10px}
+#drop span{color:#C9DCF5}
+
 /* ツールチップ */
 #tip{position:fixed;z-index:70;background:var(--navy);color:#fff;padding:10px 14px;border-radius:8px;
      font-size:15px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap;
@@ -191,7 +200,7 @@ body.howto-on{padding-top:132px}
 @media print{
   @page{size:1600px 900px;margin:0}
   body{background:#fff;padding:0;gap:0;display:block}
-  #bar,#panel,#tip,#howto{display:none !important}
+  #bar,#panel,#tip,#howto,#drop{display:none !important}
   .slide{break-after:page;page-break-after:always}
   .ed-sel{outline:none !important}
   .track i{transition:none}
@@ -205,6 +214,7 @@ body.howto-on{padding-top:132px}
   <button id="btnMove">✥ 位置を動かす</button>
   <button id="btnView">👁 プレビュー</button>
   <span style="width:14px"></span>
+  <button id="btnImg">🖼 画像を入れる</button>
   <button id="btnUndo">元に戻す</button>
   <button id="btnReset">初期化</button>
   <span class="sp"></span>
@@ -248,6 +258,8 @@ body.howto-on{padding-top:132px}
   <div class="g" style="margin-top:6px"><button id="bClear">書式を戻す</button></div>
 </div>
 <div id="tip"></div>
+<input type="file" id="fileIn" accept="image/*" multiple hidden>
+<div id="drop"><div><b>ここに画像をドロップ</b><span>ファイル名で自動的に振り分けます（KV-01 / CH-01 / P-01 …）</span></div></div>
 
 <div id="deck">
 
@@ -1072,6 +1084,45 @@ body.howto-on{padding-top:132px}
   function doUndo(){const u=undo.pop();if(!u)return;
     if(u.prop==='cssText')u.el.style.cssText=u.old;else u.el.style[u.prop]=u.old;
     save();if(sel)sync();}
+
+  /* ================= 画像の取り込み =================
+     ファイル名に KV-01 などのIDが含まれていれば、その枠へ入れる。
+     data URI として埋め込むので、書き出したHTMLは画像込みの1ファイルになる。 */
+  const drop=document.getElementById('drop'), fileIn=document.getElementById('fileIn');
+  const SLOTS=[...deck.querySelectorAll('.imgbox')].map(b=>b.dataset.id);
+
+  function putImages(files){
+    let hit=0, miss=[];
+    [...files].forEach(f=>{
+      const base=f.name.replace(/\.[^.]+$/,'').toUpperCase().replace(/[_\s]/g,'-');
+      const id=SLOTS.find(s=>base.includes(s));
+      if(!id){ miss.push(f.name); return; }
+      const box=deck.querySelector(`.imgbox[data-id="${id}"]`);
+      const r=new FileReader();
+      r.onload=()=>{
+        let img=box.querySelector('img');
+        if(!img){ img=document.createElement('img'); box.appendChild(img); }
+        img.src=r.result; box.classList.add('filled'); save();
+      };
+      r.readAsDataURL(f); hit++;
+    });
+    setTimeout(()=>{
+      let msg=`${hit}枚を配置しました。`;
+      if(miss.length) msg+=`\n\n振り分けられなかったファイル：\n${miss.join('\n')}\n\nファイル名に KV-01 / CH-01 / CH-02 / P-01〜P-04 / D-01 / D-02 のいずれかを含めてください。`;
+      try{ localStorage.setItem(KEY,deck.innerHTML); }
+      catch(e){ msg+='\n\n※ 画像が大きく、ブラウザへの自動保存ができませんでした。「HTMLを書き出す」で保存してください。'; }
+      alert(msg);
+    },600);
+  }
+
+  btnImg.onclick=()=>fileIn.click();
+  fileIn.onchange=()=>{ putImages(fileIn.files); fileIn.value=''; };
+  addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('show');});
+  drop.addEventListener('dragleave',e=>{ if(e.target===drop) drop.classList.remove('show'); });
+  addEventListener('drop',e=>{
+    e.preventDefault(); drop.classList.remove('show');
+    if(e.dataTransfer.files.length) putImages(e.dataTransfer.files);
+  });
 
   btnText.onclick=()=>setMode('text');
   btnMove.onclick=()=>setMode('move');
