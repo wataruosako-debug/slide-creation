@@ -67,6 +67,8 @@ node scripts/preview-pdf.mjs slides/ai-insight-sales-v1.html preview.pdf
 
 ## 商談前資料 `ais-mtg-deck.html`
 
+**各ページ左下の注記（出典・補足）は両デッキとも置かない。**　商談で口頭で補う前提。
+
 DL資料と同じ意匠・同じ編集UI。**アポを取った企業に、商談前に送る**ための12枚。
 
 - **訴求先はDL資料と同じ**（中小企業の経営者）。違うのは読み手の状態。すでに関心がある人が、商談前に3分で読む前提
