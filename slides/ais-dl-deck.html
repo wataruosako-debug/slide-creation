@@ -1112,9 +1112,40 @@ body.touch-ui.sheet-on #sheet{display:flex}
 (function(){
   "use strict";
   const deck=document.getElementById('deck'),panel=document.getElementById('panel'),tip=document.getElementById('tip');
-  const KEY='ais-dl-deck-v1';
-  /* 保存された編集内容があれば、他の処理を張る前に戻しておく */
-  try{const v=localStorage.getItem(KEY); if(v) deck.innerHTML=v;}catch(e){}
+  const KEY='ais-dl-deck-v1', BUILD='2026-09-08a';
+  /* 保存された編集内容があれば、他の処理を張る前に戻しておく。
+     ただし資料そのものを作り直した（BUILD が変わった）ときは、古い保存内容で
+     新しい版を上書きしてしまわないよう使わずに退避する */
+  let _stale=null;
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw){
+      let st=null; try{ st=JSON.parse(raw); }catch(e){}
+      if(st && typeof st==='object' && st.build===BUILD && typeof st.html==='string'){
+        deck.innerHTML=st.html;
+      }else{
+        _stale=(st && typeof st==='object' && typeof st.html==='string') ? st.html : raw;
+        try{ localStorage.setItem(KEY+':backup', _stale); }catch(e){}
+        try{ localStorage.removeItem(KEY); }catch(e){}
+      }
+    }
+  }catch(e){}
+  if(_stale){
+    const b=document.createElement('div');
+    b.style.cssText='position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:99999;'
+      +'background:#111827;color:#fff;padding:9px 12px;border-radius:10px;display:flex;gap:8px;'
+      +'align-items:center;font-size:13px;line-height:1.3;box-shadow:0 6px 20px rgba(0,0,0,.28);max-width:94vw';
+    const t=document.createElement('span'); t.textContent='資料を新しい版に更新しました'; b.appendChild(t);
+    const mk=(label)=>{const x=document.createElement('button');x.type='button';x.textContent=label;
+      x.style.cssText='font-size:13px;padding:5px 9px;border-radius:8px;border:1px solid #4b5563;background:#374151;color:#fff;cursor:pointer';
+      b.appendChild(x);return x;};
+    mk('以前の編集を復元').onclick=()=>{
+      try{ localStorage.setItem(KEY, JSON.stringify({build:BUILD, html:_stale})); }catch(e){}
+      location.reload();
+    };
+    mk('閉じる').onclick=()=>b.remove();
+    document.body.appendChild(b);
+  }
 
   /* 画像は png → jpg → jpeg → webp の順に探す。全部なければ枠だけ残す */
   deck.querySelectorAll('.imgbox img').forEach(img=>{
@@ -1176,7 +1207,7 @@ body.touch-ui.sheet-on #sheet{display:flex}
     else if(el.classList.contains('box')||el.classList.contains('imgbox')) el.classList.add('ed');
   });
 
-  const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,deck.innerHTML);}catch(e){}},250);};
+  const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify({build:BUILD,html:deck.innerHTML}));}catch(e){}},250);};
 
   function editableOn(on){
     if(MOBILE) on=false;
@@ -1323,7 +1354,7 @@ body.touch-ui.sheet-on #sheet{display:flex}
   }
   function persist(extra){
     let msg=extra||'';
-    try{ localStorage.setItem(KEY,deck.innerHTML); }
+    try{ localStorage.setItem(KEY,JSON.stringify({build:BUILD,html:deck.innerHTML})); }
     catch(e){ msg+='\n\n※ 画像が大きく、ブラウザへの自動保存ができませんでした。「HTMLを書き出す」で保存してください。'; }
     if(slotsBox.classList.contains('show')) buildSlots();
     if(msg) alert(msg.trim());
@@ -1428,7 +1459,7 @@ body.touch-ui.sheet-on #sheet{display:flex}
   btnView.onclick=()=>setMode('view');
   btnUndo.onclick=doUndo;
   btnReset.onclick=()=>{if(!confirm('編集内容をすべて破棄して、最初の状態に戻します。よろしいですか。'))return;
-    try{localStorage.removeItem(KEY);}catch(e){}location.reload();};
+    try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+':backup');}catch(e){}location.reload();};
   btnPrint.onclick=()=>{select(null);const m=mode;setMode('view');setTimeout(()=>{print();setMode(m);},80);};
   btnExport.onclick=()=>{
     select(null);
